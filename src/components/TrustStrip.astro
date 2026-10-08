@@ -1,0 +1,32 @@
+---
+import { trustPoints } from '../data/site';
+import Icon from './Icon.astro';
+---
+
+<section aria-label="Why homeowners call us" class="relative z-10 -mt-24 sm:-mt-28 lg:-mt-36">
+  <div class="container-site">
+    <ul
+      class="grid grid-cols-2 gap-px overflow-hidden rounded-[4px] bg-stone-line shadow-[0_30px_60px_-25px_rgb(7_14_26/0.45)] ring-1 ring-navy-900/5 lg:grid-cols-4"
+      data-reveal
+    >
+      {
+        trustPoints.map((point) => (
+          <li class="group relative bg-white px-5 py-6 sm:px-7 sm:py-8">
+            <span class="absolute inset-x-0 top-0 h-[3px] bg-accent" />
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <span class="grid size-11 shrink-0 place-items-center rounded-[3px] bg-navy-900 text-accent transition-transform duration-300 group-hover:-translate-y-0.5 sm:size-12">
+                <Icon name={point.icon} class="size-[22px]" />
+              </span>
+              <div>
+                <h3 class="font-display text-lg leading-tight font-bold tracking-wide text-navy-900 uppercase sm:text-xl">
+                  {point.title}
+                </h3>
+                <p class="mt-1 text-sm leading-snug text-slate-600">{point.text}</p>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- PLACEHOLDER: matches the mark in src/assets/logo.svg -->
+  <rect width="48" height="48" rx="6" fill="#f5a524"/>
+  <g fill="none" stroke="#0b1626" stroke-width="3.5">
+    <path d="M10 20.5 24 9.5l14 11" stroke-linecap="square"/>
+    <path d="M10 26.25h12M16 26.25V38.5"/>
+    <path d="M26.75 38.5V26.25H33a3.75 3.75 0 0 1 0 7.5h-6.25M31.5 33.75l5 4.75"/>
+  </g>
+</svg>

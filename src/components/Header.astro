@@ -1,0 +1,156 @@
+---
+import { company, nav } from '../data/site';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+---
+
+<header
+  id="site-header"
+  class="sticky top-0 z-50 border-b border-white/[0.06] bg-navy-950 text-white transition-shadow duration-300 data-[scrolled=true]:shadow-[0_10px_30px_-12px_rgb(0_0_0/0.6)]"
+>
+  <div class="container-site flex h-16 items-center justify-between gap-6 lg:h-20">
+    <a href="#top" class="flex min-w-0 items-center rounded-[3px] py-1" aria-label={`${company.name}: back to top`}>
+      <Logo class="h-9 lg:h-11" maxWidth="max-w-[min(60vw,14rem)]" eager />
+    </a>
+
+    <nav aria-label="Main" class="hidden lg:block">
+      <ul class="flex items-center gap-8 xl:gap-10">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                data-nav-link
+                class="group relative py-2 font-display text-[0.95rem] font-semibold tracking-[0.14em] text-slate-300 uppercase transition-colors hover:text-white data-[active=true]:text-white"
+              >
+                {item.label}
+                <span class="absolute inset-x-0 -bottom-0.5 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100 group-data-[active=true]:scale-x-100" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="hidden items-center gap-6 lg:flex">
+      <a href={`tel:${company.phoneE164}`} class="group flex items-center gap-3 rounded-[3px]">
+        <span
+          class="grid size-10 place-items-center rounded-full bg-white/5 text-accent ring-1 ring-white/15 transition group-hover:bg-accent group-hover:text-navy-950"
+        >
+          <Icon name="phone" class="size-[18px]" />
+        </span>
+        <span class="flex flex-col leading-tight">
+          <span class="text-[0.7rem] font-medium tracking-[0.16em] text-slate-400 uppercase">Call us</span>
+          <span class="font-display text-xl font-semibold tracking-wide">{company.phoneDisplay}</span>
+        </span>
+      </a>
+      <a href="#estimate" class="btn btn-primary">Free Estimate</a>
+    </div>
+
+    <!-- Mobile: hamburger only (call/estimate live in the bottom action bar) -->
+    <button
+      type="button"
+      id="menu-toggle"
+      class="group -mr-2 grid size-12 shrink-0 place-items-center rounded-[3px] lg:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <span class="sr-only">Menu</span>
+      <span class="relative block h-4 w-6" aria-hidden="true">
+        <span
+          class="absolute top-0 left-0 h-0.5 w-6 bg-white transition duration-300 group-aria-expanded:top-[7px] group-aria-expanded:rotate-45"
+        ></span>
+        <span
+          class="absolute top-[7px] left-0 h-0.5 w-4 bg-accent transition duration-200 group-aria-expanded:opacity-0"
+        ></span>
+        <span
+          class="absolute top-[14px] left-0 h-0.5 w-6 bg-white transition duration-300 group-aria-expanded:top-[7px] group-aria-expanded:-rotate-45"
+        ></span>
+      </span>
+    </button>
+  </div>
+
+  <div
+    id="mobile-menu"
+    hidden
+    class="max-h-[calc(100svh-4rem)] overflow-y-auto border-t border-white/10 bg-navy-950 lg:hidden"
+  >
+    <nav aria-label="Mobile" class="container-site py-4">
+      <ul>
+        {
+          nav.map((item, i) => (
+            <li class="border-b border-white/[0.07]">
+              <a
+                href={item.href}
+                class="flex items-center justify-between py-4 font-display text-2xl font-semibold tracking-wider uppercase"
+              >
+                <span>
+                  <span class="mr-3 text-sm text-accent tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                  {item.label}
+                </span>
+                <Icon name="chevronRight" class="size-5 text-slate-500" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-6 grid gap-3 pb-2 sm:grid-cols-2">
+        <a href={`tel:${company.phoneE164}`} class="btn btn-ghost-light">
+          <Icon name="phone" /> {company.phoneDisplay}
+        </a>
+        <a href="#estimate" class="btn btn-primary">Get a Free Estimate</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.getElementById('site-header')!;
+  const toggle = document.getElementById('menu-toggle') as HTMLButtonElement;
+  const menu = document.getElementById('mobile-menu')!;
+
+  const setOpen = (open: boolean, returnFocus = false) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.hidden = !open;
+    if (open) menu.querySelector<HTMLAnchorElement>('a')?.focus();
+    else if (returnFocus) toggle.focus();
+  };
+
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.hidden) setOpen(false, true);
+  });
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && !header.contains(e.target as Node)) setOpen(false);
+  });
+  window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => {
+    if (e.matches) setOpen(false);
+  });
+
+  // Shadow once the page scrolls.
+  const onScroll = () => header.setAttribute('data-scrolled', String(window.scrollY > 8));
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Highlight the nav link for the section in view.
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+  const sections = [...links]
+    .map((a) => document.querySelector<HTMLElement>(a.getAttribute('href')!))
+    .filter((s): s is HTMLElement => !!s);
+  if ('IntersectionObserver' in window && sections.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const id = `#${entry.target.id}`;
+          links.forEach((a) => a.setAttribute('data-active', String(a.getAttribute('href') === id)));
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    sections.forEach((s) => io.observe(s));
+  }
+</script>

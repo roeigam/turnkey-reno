@@ -1,0 +1,208 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { projects, projectsIntro } from '../data/site';
+import { asset, isSvg } from '../lib/images';
+import Icon from './Icon.astro';
+import PlaceholderBadge from './PlaceholderBadge.astro';
+import SectionHeading from './SectionHeading.astro';
+
+// Bento rhythm, repeating every 8 items: one feature tile (2×2), one wide tile (2×1), the rest 1×1.
+const layout = (i: number) => {
+  const slot = i % 8;
+  if (slot === 0) return 'col-span-2 row-span-2';
+  if (slot === 5) return 'col-span-2';
+  return '';
+};
+
+const items = await Promise.all(
+  projects.map(async (project) => {
+    const src = asset(project.image);
+    // Large version for the lightbox (raster → WebP, max 2000px wide; SVG passes through).
+    const full = await getImage({ src, width: Math.min(src.width, 2000) });
+    return { ...project, src, full: full.src };
+  }),
+);
+const anyPlaceholder = projects.some((p) => p.placeholder);
+---
+
+<section id="projects" aria-labelledby="projects-heading" class="bg-white py-24 sm:py-28 lg:py-36">
+  <div class="container-site">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <SectionHeading id="projects-heading" eyebrow={projectsIntro.eyebrow} heading={projectsIntro.heading} text={projectsIntro.text}>
+        <PlaceholderBadge show={anyPlaceholder} class="mt-5" />
+      </SectionHeading>
+      <a href="#estimate" class="btn btn-dark self-start lg:self-end" data-reveal>
+        Start Your Project
+        <Icon name="arrow" class="btn-arrow" />
+      </a>
+    </div>
+
+    <ul
+      class="mt-12 grid grid-flow-dense auto-rows-[42vw] grid-cols-2 gap-2.5 sm:auto-rows-[15rem] sm:gap-4 lg:mt-16 lg:auto-rows-[15.5rem] lg:grid-cols-4 xl:auto-rows-[17rem]"
+      role="list"
+      data-gallery
+    >
+      {
+        items.map((item, i) => (
+          <li class:list={[layout(i)]} data-reveal style={`--reveal-delay: ${(i % 4) * 70}ms`}>
+            <button
+              type="button"
+              class="group relative block size-full overflow-hidden rounded-[4px] bg-navy-900 text-left focus-visible:outline-offset-4"
+              data-index={i}
+              data-full={item.full}
+              data-alt={item.alt}
+              data-caption={item.caption}
+              aria-label={`View larger: ${item.caption}`}
+              aria-haspopup="dialog"
+            >
+              <Image
+                src={item.src}
+                alt={item.alt}
+                {...(isSvg(item.src)
+                  ? {}
+                  : {
+                      widths: [480, 800, 1200, 1600].filter((w) => w <= item.src.width),
+                      sizes: layout(i).includes('col-span-2') ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, 50vw',
+                    })}
+                class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+              />
+              <span class="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-transparent opacity-90 transition-opacity duration-500 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-visible:opacity-100" />
+              <span class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-3.5 sm:p-5 lg:translate-y-3 lg:opacity-0 lg:transition lg:duration-500 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-visible:translate-y-0 lg:group-focus-visible:opacity-100">
+                <span>
+                  <span class="block h-0.5 w-6 bg-accent" />
+                  <span class="mt-2 block font-display text-base leading-tight font-bold tracking-wider text-white uppercase sm:text-xl">
+                    {item.caption}
+                  </span>
+                </span>
+                <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-accent text-navy-950 sm:grid">
+                  <Icon name="expand" class="size-[18px]" strokeWidth={2} />
+                </span>
+              </span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <!-- Lightbox -->
+  <dialog
+    id="lightbox"
+    class="lightbox m-auto h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-white"
+    aria-label="Project photo viewer"
+  >
+    <div class="flex h-full flex-col">
+      <div class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+        <p class="font-display text-sm font-semibold tracking-[0.2em] text-slate-400 uppercase tabular-nums" aria-live="polite">
+          <span data-lb-counter></span>
+        </p>
+        <button
+          type="button"
+          class="grid size-12 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"
+          data-lb-close
+          aria-label="Close"
+        >
+          <Icon name="close" class="size-6" />
+        </button>
+      </div>
+
+      <figure class="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 sm:px-20">
+        <img data-lb-img src="" alt="" class="max-h-full min-h-0 w-auto max-w-full rounded-[3px] object-contain shadow-2xl transition-opacity duration-300" />
+        <figcaption class="mt-4 mb-2 flex items-center gap-3 font-display text-xl font-bold tracking-wider uppercase">
+          <span class="h-0.5 w-6 bg-accent"></span>
+          <span data-lb-caption></span>
+        </figcaption>
+
+        <button
+          type="button"
+          class="absolute top-1/2 left-2 hidden size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 transition hover:bg-accent hover:text-navy-950 sm:left-5 sm:grid"
+          data-lb-prev
+          aria-label="Previous photo"
+        >
+          <Icon name="chevronLeft" class="size-6" strokeWidth={2.25} />
+        </button>
+        <button
+          type="button"
+          class="absolute top-1/2 right-2 hidden size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 transition hover:bg-accent hover:text-navy-950 sm:right-5 sm:grid"
+          data-lb-next
+          aria-label="Next photo"
+        >
+          <Icon name="chevronRight" class="size-6" strokeWidth={2.25} />
+        </button>
+      </figure>
+
+      <!-- Mobile prev/next row -->
+      <div class="flex justify-center gap-4 px-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:hidden">
+        <button type="button" class="grid size-12 place-items-center rounded-full bg-white/10" data-lb-prev aria-label="Previous photo">
+          <Icon name="chevronLeft" class="size-6" strokeWidth={2.25} />
+        </button>
+        <button type="button" class="grid size-12 place-items-center rounded-full bg-white/10" data-lb-next aria-label="Next photo">
+          <Icon name="chevronRight" class="size-6" strokeWidth={2.25} />
+        </button>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  const dialog = document.getElementById('lightbox') as HTMLDialogElement;
+  const thumbs = [...document.querySelectorAll<HTMLButtonElement>('[data-gallery] button[data-full]')];
+  const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+  const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+  const counter = dialog.querySelector<HTMLElement>('[data-lb-counter]')!;
+  let index = 0;
+  let opener: HTMLElement | null = null;
+
+  const show = (i: number) => {
+    index = (i + thumbs.length) % thumbs.length;
+    const t = thumbs[index].dataset;
+    img.src = t.full!;
+    img.alt = t.alt ?? '';
+    caption.textContent = t.caption ?? '';
+    counter.textContent = `${index + 1} / ${thumbs.length}`;
+    // Warm the cache for neighbours.
+    [index - 1, index + 1].forEach((n) => {
+      const src = thumbs[(n + thumbs.length) % thumbs.length].dataset.full;
+      if (src) new Image().src = src;
+    });
+  };
+
+  thumbs.forEach((btn, i) =>
+    btn.addEventListener('click', () => {
+      opener = btn;
+      show(i);
+      dialog.showModal();
+      document.documentElement.style.overflow = 'hidden';
+    }),
+  );
+
+  dialog.querySelectorAll('[data-lb-prev]').forEach((b) => b.addEventListener('click', () => show(index - 1)));
+  dialog.querySelectorAll('[data-lb-next]').forEach((b) => b.addEventListener('click', () => show(index + 1)));
+  dialog.querySelector('[data-lb-close]')!.addEventListener('click', () => dialog.close());
+
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') show(index - 1);
+    if (e.key === 'ArrowRight') show(index + 1);
+  });
+  // Click on the dark backdrop area (not the image or controls) closes.
+  dialog.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target === dialog || target.tagName === 'FIGURE' || target.parentElement === dialog) dialog.close();
+  });
+  dialog.addEventListener('close', () => {
+    document.documentElement.style.overflow = '';
+    opener?.focus();
+  });
+
+  // Swipe on touch devices.
+  let startX = 0;
+  dialog.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
+  dialog.addEventListener(
+    'touchend',
+    (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+    },
+    { passive: true },
+  );
+</script>

@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import { company, hero } from '../data/site';
+import { asset, isSvg } from '../lib/images';
+import Icon from './Icon.astro';
+import PlaceholderBadge from './PlaceholderBadge.astro';
+
+const bg = asset(hero.image.src);
+// "You start, we finish." → "You start," + highlighted "we finish."
+const commaAt = company.slogan.indexOf(',');
+const [lead, highlight] =
+  commaAt === -1 ? [company.slogan, ''] : [company.slogan.slice(0, commaAt + 1), company.slogan.slice(commaAt + 1).trim()];
+---
+
+<section id="top" aria-labelledby="hero-heading" class="relative isolate overflow-hidden bg-navy-950 text-white">
+  <div class="absolute inset-0 -z-20 overflow-hidden">
+    <Image
+      src={bg}
+      alt={hero.image.alt}
+      {...(isSvg(bg) ? {} : { widths: [768, 1280, 1920, 2560].filter((w) => w <= bg.width), sizes: '100vw' })}
+      loading="eager"
+      fetchpriority="high"
+      class="hero-zoom size-full object-cover object-[70%_center]"
+    />
+  </div>
+  <!-- Overlays: strong navy on the text side, blueprint grid, bottom fade -->
+  <div
+    class="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--color-navy-950)_0%,rgb(7_14_26/0.92)_38%,rgb(7_14_26/0.55)_70%,rgb(7_14_26/0.35)_100%)]"
+  >
+  </div>
+  <div class="absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(100deg,black_10%,transparent_65%)]"></div>
+  <div class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-navy-950/80 to-transparent"></div>
+  <!-- Amber vertical rule on large screens -->
+  <div class="absolute top-0 bottom-0 left-[max(1.25rem,calc((100vw-80rem)/2+2.5rem))] -z-10 hidden w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent xl:block"></div>
+
+  <div
+    class="container-site flex min-h-[calc(100svh-8rem)] flex-col justify-center pt-16 pb-36 sm:min-h-[40rem] lg:min-h-[min(100svh-5rem,52rem)] lg:pt-24 lg:pb-48 xl:pl-20"
+  >
+    <p class="eyebrow hero-rise text-accent" style="--rise-delay: 80ms">{hero.eyebrow}</p>
+
+    <h1
+      id="hero-heading"
+      class="hero-rise mt-6 max-w-4xl font-display text-[clamp(3.6rem,15vw,9.5rem)] leading-[0.86] font-bold tracking-[-0.01em] uppercase"
+      style="--rise-delay: 160ms"
+    >
+      <span class="block">{lead}</span>
+      {highlight && <span class="block text-accent">{highlight}</span>}
+    </h1>
+
+    <p class="hero-rise mt-7 max-w-xl text-lg leading-relaxed text-slate-200 sm:text-xl" style="--rise-delay: 260ms">
+      {hero.subheading}
+    </p>
+
+    <div class="hero-rise mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4" style="--rise-delay: 340ms">
+      <a href="#estimate" class="btn btn-primary btn-lg">
+        {hero.primaryCta}
+        <Icon name="arrow" class="btn-arrow" />
+      </a>
+      <a href={`tel:${company.phoneE164}`} class="btn btn-ghost-light btn-lg">
+        <Icon name="phone" />
+        {hero.secondaryCta}
+        <span class="font-sans text-base font-medium tracking-normal normal-case opacity-80">{company.phoneDisplay}</span>
+      </a>
+    </div>
+
+    <ul class="hero-rise mt-9 flex flex-wrap gap-x-7 gap-y-2 text-sm font-medium text-slate-300" style="--rise-delay: 420ms">
+      {
+        hero.highlights.map((h) => (
+          <li class="flex items-center gap-2">
+            <Icon name="check" class="size-4 text-accent" strokeWidth={2.5} />
+            {h}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <PlaceholderBadge show={hero.image.placeholder} dark class="absolute right-4 bottom-[clamp(4rem,9vw,7rem)] hidden sm:inline-flex" />
+
+  <!-- Angled bottom edge into the light section -->
+  <svg
+    class="pointer-events-none absolute inset-x-0 bottom-[-1px] block h-[clamp(2.5rem,6vw,5.5rem)] w-full text-paper"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <polygon points="0,100 100,100 100,0" fill="currentColor"></polygon>
+  </svg>
+</section>

@@ -1,0 +1,79 @@
+---
+import { company, footer, nav } from '../data/site';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+const { street, suite, city, region, postalCode } = company.address;
+const year = new Date().getFullYear();
+---
+
+<footer class="relative bg-navy-950 text-slate-300">
+  <div class="h-1.5 bg-stripes opacity-90" aria-hidden="true"></div>
+
+  <div class="container-site grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10 lg:py-20">
+    <div class="sm:col-span-2 lg:col-span-5">
+      <a href="#top" class="inline-flex rounded-[3px]" aria-label={`${company.name}: back to top`}>
+        <Logo class="h-11" maxWidth="max-w-[16rem]" />
+      </a>
+      <p class="mt-6 font-display text-2xl font-bold tracking-wide text-white uppercase">{company.slogan}</p>
+      <p class="mt-3 max-w-sm leading-relaxed text-slate-400">{footer.blurb}</p>
+    </div>
+
+    <nav aria-label="Footer" class="lg:col-span-3">
+      <h2 class="font-display text-sm font-semibold tracking-[0.2em] text-accent uppercase">Quick links</h2>
+      <ul class="mt-5 space-y-3">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="inline-flex items-center gap-2 transition-colors hover:text-white">
+                <span class="h-px w-3 bg-accent/70" />
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="lg:col-span-4">
+      <h2 class="font-display text-sm font-semibold tracking-[0.2em] text-accent uppercase">Contact</h2>
+      <ul class="mt-5 space-y-4">
+        <li>
+          <a href={`tel:${company.phoneE164}`} class="group flex items-center gap-3">
+            <Icon name="phone" class="size-5 text-accent" />
+            <span class="font-display text-2xl font-bold tracking-wide text-white transition-colors group-hover:text-accent">{company.phoneDisplay}</span>
+          </a>
+        </li>
+        {
+          company.email && (
+            <li>
+              <a href={`mailto:${company.email}`} class="flex items-center gap-3 transition-colors hover:text-white">
+                <Icon name="mail" class="size-5 text-accent" />
+                {company.email}
+              </a>
+            </li>
+          )
+        }
+        <li class="flex gap-3">
+          <Icon name="pin" class="mt-0.5 size-5 shrink-0 text-accent" />
+          <address class="leading-relaxed not-italic">
+            {company.name}<br />
+            {street}{suite && `, ${suite}`}<br />
+            {city}, {region} {postalCode}
+          </address>
+        </li>
+      </ul>
+      <p class="mt-5 text-sm text-slate-500">Serving {company.serviceArea}</p>
+    </div>
+  </div>
+
+  <div class="border-t border-white/[0.07]">
+    <div class="container-site flex flex-col gap-2 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; {year} {company.legalName}. All rights reserved.</p>
+      <a href="#top" class="inline-flex items-center gap-2 self-start transition-colors hover:text-white sm:self-auto">
+        Back to top
+        <Icon name="chevronRight" class="size-4 -rotate-90" />
+      </a>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <!-- PLACEHOLDER project photo. Replace with a real photo and update projects[] in src/data/site.ts -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#24454a"/><stop offset="1" stop-color="#162a2e"/>
+    </linearGradient>
+    
+  <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity="0.03" stroke-width="1"/>
+  </pattern>
+  <pattern id="g-major" width="200" height="200" patternUnits="userSpaceOnUse">
+    <path d="M200 0H0V200" fill="none" stroke="#fff" stroke-opacity="0.06" stroke-width="1.5"/>
+  </pattern>
+  </defs>
+  <rect width="1600" height="1200" fill="url(#bg)"/>
+  <rect width="1600" height="1200" fill="url(#g)"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="3">
+    <rect x="460" y="330" width="680" height="480"/>
+    <path d="M0 0l460 330M1600 0l-460 330M0 1200l460-390M1600 1200l-460-390"/>
+    <path d="M300 1200l280-390M650 1200l140-390M950 1200l-140-390M1300 1200l-280-390"/>
+  </g>
+  <!-- Flooring Installation -->
+  <path d="M740 520h120" stroke="#f5a524" stroke-width="4"/>
+  <text x="800" y="590" text-anchor="middle" fill="#f5a524" font-family="'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif" font-size="40" font-weight="600" letter-spacing="8">PROJECT 04</text>
+  <text x="800" y="650" text-anchor="middle" fill="#fff" fill-opacity=".5" font-family="'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif" font-size="30" letter-spacing="5">PLACEHOLDER IMAGE</text>
+</svg>

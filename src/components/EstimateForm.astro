@@ -1,0 +1,264 @@
+---
+import { company, estimate, formConfig, services } from '../data/site';
+import Icon from './Icon.astro';
+
+const field =
+  'block h-12 w-full rounded-[3px] border border-navy-900/15 bg-paper/50 px-4 text-base text-navy-900 transition placeholder:text-slate-400 hover:border-navy-900/30 focus:border-accent-600 focus:bg-white focus:ring-4 focus:ring-accent/25 focus:outline-none aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-red-600/15';
+const label = 'mb-2 block text-sm font-semibold text-navy-900';
+const error = 'mt-1.5 hidden text-sm font-medium text-red-700';
+const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
+---
+
+<section id="estimate" aria-labelledby="estimate-heading" class="relative bg-paper py-24 sm:py-28 lg:py-36">
+  <div class="absolute inset-0 bg-blueprint-ink [mask-image:linear-gradient(to_bottom,black,transparent_60%)]"></div>
+
+  <div class="container-site relative">
+    <div class="grid overflow-hidden rounded-[6px] bg-white shadow-[0_40px_80px_-40px_rgb(7_14_26/0.5)] ring-1 ring-navy-900/[0.06] lg:grid-cols-12" data-reveal>
+      <!-- Left: pitch + steps + phone -->
+      <div class="relative isolate bg-navy-900 p-8 text-white sm:p-10 lg:col-span-5 lg:p-12">
+        <div class="absolute inset-0 -z-10 bg-blueprint"></div>
+        <div class="absolute inset-x-0 top-0 h-1.5 bg-stripes opacity-90"></div>
+
+        <p class="eyebrow text-accent">{estimate.eyebrow}</p>
+        <h2 id="estimate-heading" class="mt-4 font-display text-[2.6rem] leading-[0.95] font-bold tracking-tight uppercase sm:text-5xl lg:text-6xl">
+          {estimate.heading}
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed text-slate-300">{estimate.text}</p>
+
+        <ol class="mt-10 space-y-6" role="list">
+          {
+            estimate.steps.map((step, i) => (
+              <li class="flex gap-4">
+                <span class="grid size-10 shrink-0 place-items-center rounded-full font-display text-lg font-bold text-accent ring-1 ring-accent/50">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 class="font-display text-xl font-bold tracking-wide uppercase">{step.title}</h3>
+                  <p class="text-slate-400">{step.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="mt-10 border-t border-white/10 pt-8">
+          <p class="font-display text-sm font-semibold tracking-[0.18em] text-slate-400 uppercase">Prefer to talk?</p>
+          <a href={`tel:${company.phoneE164}`} class="mt-1 inline-flex items-center gap-3 font-display text-4xl font-bold tracking-wide transition-colors hover:text-accent">
+            <Icon name="phone" class="size-7 text-accent" />
+            {company.phoneDisplay}
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="p-6 sm:p-10 lg:col-span-7 lg:p-12">
+        <form
+          id="estimate-form"
+          action={formConfig.action || undefined}
+          method="POST"
+          novalidate
+          class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+          data-success={estimate.successMessage}
+          data-error={estimate.errorMessage}
+          data-not-connected={estimate.notConnectedMessage}
+        >
+          {formConfig.accessKey && <input type="hidden" name="access_key" value={formConfig.accessKey} />}
+          <input type="hidden" name="subject" value={formConfig.subject} />
+          <input type="hidden" name="from_name" value={`${company.name} website`} />
+
+          <!-- Honeypot: hidden from people, tempting to bots. Leave empty. -->
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label for="hp-field">Leave this field empty</label>
+            <input type="text" id="hp-field" name={formConfig.honeypotName} tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div>
+            <label for="f-name" class={label}>Full name <Fragment set:html={req} /></label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required class={field} aria-describedby="f-name-error" data-error-required="Please enter your name." />
+            <p id="f-name-error" class={error}></p>
+          </div>
+
+          <div>
+            <label for="f-phone" class={label}>Phone <Fragment set:html={req} /></label>
+            <input
+              id="f-phone"
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              required
+              class={field}
+              aria-describedby="f-phone-error"
+              data-validate="phone"
+              data-error-required="Please enter your phone number."
+              data-error-invalid="Please enter a valid 10-digit phone number."
+            />
+            <p id="f-phone-error" class={error}></p>
+          </div>
+
+          <div>
+            <label for="f-email" class={label}>Email <Fragment set:html={req} /></label>
+            <input
+              id="f-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              required
+              class={field}
+              aria-describedby="f-email-error"
+              data-validate="email"
+              data-error-required="Please enter your email address."
+              data-error-invalid="Please enter a valid email address, like name@example.com."
+            />
+            <p id="f-email-error" class={error}></p>
+          </div>
+
+          <div>
+            <label for="f-zip" class={label}>Property zip code <Fragment set:html={req} /></label>
+            <input
+              id="f-zip"
+              name="zip"
+              type="text"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              maxlength="10"
+              required
+              class={field}
+              aria-describedby="f-zip-error"
+              data-validate="zip"
+              data-error-required="Please enter the property zip code."
+              data-error-invalid="Please enter a 5-digit zip code."
+            />
+            <p id="f-zip-error" class={error}></p>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="f-service" class={label}>Service needed <Fragment set:html={req} /></label>
+            <div class="relative">
+              <select id="f-service" name="service" required class:list={[field, 'appearance-none pr-12']} aria-describedby="f-service-error" data-error-required="Please choose a service.">
+                <option value="" selected disabled>Select a service…</option>
+                {services.map((s) => <option value={s.title}>{s.title}</option>)}
+                <option value="Other / Not sure">Other / Not sure</option>
+              </select>
+              <Icon name="chevronRight" class="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 rotate-90 text-slate-500" />
+            </div>
+            <p id="f-service-error" class={error}></p>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="f-message" class={label}>Tell us about your project <span class="font-normal text-slate-500">(optional)</span></label>
+            <textarea
+              id="f-message"
+              name="message"
+              rows="5"
+              maxlength="3000"
+              class:list={[field, 'h-auto py-3 leading-relaxed']}
+              placeholder="Rooms involved, rough timeline, owner-occupied or investment property…"></textarea>
+          </div>
+
+          <div class="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm text-slate-500"><span class="text-accent-700" aria-hidden="true">*</span> Required. {estimate.privacyNote}</p>
+            <button type="submit" class="btn btn-primary btn-lg shrink-0 disabled:cursor-wait disabled:opacity-70">
+              <span data-submit-label>{estimate.submitLabel}</span>
+              <Icon name="arrow" class="btn-arrow" />
+            </button>
+          </div>
+
+          <div
+            id="form-status"
+            role="status"
+            aria-live="polite"
+            tabindex="-1"
+            class="hidden rounded-[3px] p-4 text-sm font-medium sm:col-span-2 data-[state=error]:bg-red-50 data-[state=error]:text-red-800 data-[state=error]:ring-1 data-[state=error]:ring-red-200 data-[state=info]:bg-accent/10 data-[state=info]:text-navy-900 data-[state=info]:ring-1 data-[state=info]:ring-accent/40 data-[state=success]:bg-emerald-50 data-[state=success]:text-emerald-900 data-[state=success]:ring-1 data-[state=success]:ring-emerald-200"
+          >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('estimate-form') as HTMLFormElement;
+  const status = document.getElementById('form-status')!;
+  const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  const fields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[required]')];
+
+  const validators: Record<string, (v: string) => boolean> = {
+    phone: (v) => {
+      const digits = v.replace(/\D/g, '');
+      return digits.length === 10 || (digits.length === 11 && digits.startsWith('1'));
+    },
+    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v),
+    zip: (v) => /^\d{5}(-\d{4})?$/.test(v),
+  };
+
+  const validate = (el: HTMLInputElement | HTMLSelectElement) => {
+    const value = el.value.trim();
+    let message = '';
+    if (!value) message = el.dataset.errorRequired ?? 'This field is required.';
+    else if (el.dataset.validate && !validators[el.dataset.validate](value)) message = el.dataset.errorInvalid ?? 'Please check this field.';
+
+    const errorEl = document.getElementById(`${el.id}-error`);
+    el.setAttribute('aria-invalid', String(!!message));
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.classList.toggle('hidden', !message);
+    }
+    return !message;
+  };
+
+  // Validate on blur; re-validate live once a field has been flagged.
+  fields.forEach((el) => {
+    el.addEventListener('blur', () => el.value.trim() && validate(el));
+    el.addEventListener('input', () => el.getAttribute('aria-invalid') === 'true' && validate(el));
+    el.addEventListener('change', () => el.getAttribute('aria-invalid') === 'true' && validate(el));
+  });
+
+  const setStatus = (state: 'success' | 'error' | 'info' | '', text = '') => {
+    status.dataset.state = state;
+    status.textContent = text;
+    status.classList.toggle('hidden', !state);
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setStatus('');
+    const invalid = fields.filter((el) => !validate(el));
+    if (invalid.length) {
+      invalid[0].focus();
+      return;
+    }
+
+    const data = new FormData(form);
+    const honeypot = form.querySelector<HTMLInputElement>('#hp-field');
+    if (honeypot?.value) {
+      // Likely a bot: pretend success, send nothing.
+      setStatus('success', form.dataset.success);
+      form.reset();
+      return;
+    }
+
+    const action = form.getAttribute('action');
+    if (!action) {
+      setStatus('info', form.dataset.notConnected);
+      status.focus();
+      return;
+    }
+
+    submit.disabled = true;
+    try {
+      const res = await fetch(action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(String(res.status));
+      setStatus('success', form.dataset.success);
+      form.reset();
+      fields.forEach((el) => el.removeAttribute('aria-invalid'));
+    } catch {
+      setStatus('error', form.dataset.error);
+    } finally {
+      submit.disabled = false;
+      status.focus();
+    }
+  });
+</script>

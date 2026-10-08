@@ -1,0 +1,29 @@
+---
+/**
+ * Angled section edge. Place inside a `relative` section; it paints a slanted
+ * wedge in `fill` color (the neighbouring section's background) at the top or bottom.
+ */
+interface Props {
+  position?: 'top' | 'bottom';
+  /** Tailwind text color class used as the wedge fill, e.g. "text-paper". */
+  fill: string;
+  flip?: boolean;
+}
+
+const { position = 'top', fill, flip = false } = Astro.props;
+const points = position === 'top' ? (flip ? '0,0 100,0 100,100' : '0,0 100,0 0,100') : flip ? '0,100 100,100 0,0' : '0,100 100,100 100,0';
+---
+
+<svg
+  class:list={[
+    'pointer-events-none absolute inset-x-0 z-[1] block h-[clamp(1.75rem,4vw,4rem)] w-full',
+    position === 'top' ? 'top-0' : 'bottom-0',
+    fill,
+  ]}
+  viewBox="0 0 100 100"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <polygon points={points} fill="currentColor"></polygon>
+</svg>

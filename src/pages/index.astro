@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import TrustStrip from '../components/TrustStrip.astro';
+import Services from '../components/Services.astro';
+import About from '../components/About.astro';
+import Projects from '../components/Projects.astro';
+import Tips from '../components/Tips.astro';
+import EstimateForm from '../components/EstimateForm.astro';
+import Footer from '../components/Footer.astro';
+import MobileActionBar from '../components/MobileActionBar.astro';
+---
+
+<BaseLayout>
+  <Header />
+  <main id="main" tabindex="-1" class="focus:outline-none">
+    <Hero />
+    <TrustStrip />
+    <Services />
+    <About />
+    <Projects />
+    <Tips />
+    <EstimateForm />
+  </main>
+  <Footer />
+  <MobileActionBar />
+</BaseLayout>

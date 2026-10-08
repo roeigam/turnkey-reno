@@ -1,0 +1,18 @@
+---
+/** Small "Placeholder" tag, shown only when settings.showPlaceholderBadges is on. */
+import { settings } from '../data/site';
+
+interface Props {
+  show?: boolean;
+  dark?: boolean;
+  class?: string;
+}
+
+const { show = true, dark = false, class: className } = Astro.props;
+---
+
+{
+  settings.showPlaceholderBadges && show && (
+    <span class:list={['placeholder-badge', dark && 'on-dark', className]}>Placeholder</span>
+  )
+}
