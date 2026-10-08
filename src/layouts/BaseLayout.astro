@@ -5,12 +5,9 @@ import '@fontsource/barlow-condensed/600.css';
 import '@fontsource/barlow-condensed/700.css';
 import '../styles/global.css';
 import { company, seo, settings, brand } from '../data/site';
-import { asset } from '../lib/images';
-import { getImage } from 'astro:assets';
 
 const canonical = new URL(Astro.url.pathname, company.siteUrl).href;
 const ogImage = new URL(seo.ogImage, company.siteUrl).href;
-const logo = await getImage({ src: asset(brand.logo.src) });
 
 const { street, suite, city, region, postalCode, country } = company.address;
 
@@ -25,7 +22,7 @@ const jsonLd = {
   telephone: company.phoneE164,
   ...(company.email ? { email: company.email } : {}),
   image: ogImage,
-  logo: new URL(logo.src, company.siteUrl).href,
+  logo: new URL(brand.schemaLogo, company.siteUrl).href,
   address: {
     '@type': 'PostalAddress',
     streetAddress: [street, suite].filter(Boolean).join(', '),
@@ -49,6 +46,8 @@ const jsonLd = {
     {settings.noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content={seo.themeColor} />
     <meta name="format-detection" content="telephone=no" />
 

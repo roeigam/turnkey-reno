@@ -13,6 +13,6 @@ const { show = true, dark = false, class: className } = Astro.props;
 
 {
   settings.showPlaceholderBadges && show && (
-    <span class:list={['placeholder-badge', dark && 'on-dark', className]}>Placeholder</span>
+    <span class:list={['placeholder-badge', dark && 'is-dark', className]}>Placeholder</span>
   )
 }

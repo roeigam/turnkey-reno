@@ -20,7 +20,7 @@
     <path d="M300 1200l280-390M650 1200l140-390M950 1200l-140-390M1300 1200l-280-390"/>
   </g>
   <!-- Interior Remodel -->
-  <path d="M740 520h120" stroke="#f5a524" stroke-width="4"/>
-  <text x="800" y="590" text-anchor="middle" fill="#f5a524" font-family="'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif" font-size="40" font-weight="600" letter-spacing="8">PROJECT 05</text>
+  <path d="M740 520h120" stroke="#dba84f" stroke-width="4"/>
+  <text x="800" y="590" text-anchor="middle" fill="#dba84f" font-family="'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif" font-size="40" font-weight="600" letter-spacing="8">PROJECT 05</text>
   <text x="800" y="650" text-anchor="middle" fill="#fff" fill-opacity=".5" font-family="'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif" font-size="30" letter-spacing="5">PLACEHOLDER IMAGE</text>
 </svg>

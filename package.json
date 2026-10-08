@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@fontsource/montserrat": "^5.3.0",
+    "opentype.js": "^2.0.0",
     "typescript": "^6.0.3"
   }
 }

@@ -40,13 +40,33 @@ Images live in **`src/assets/`** and are referenced from `site.ts` by path relat
 
 - **Project photos:** drop files into `src/assets/projects/` (e.g. `kitchen-1.jpg`), then update the `image` paths in `projects`. Any number of photos works; the grid repeats its layout pattern every 8 images. Aim for ≥ 1600px wide, landscape.
 - **Hero background:** replace `hero.image.src` with a wide photo (≥ 2400px). The dark overlay keeps text readable.
-- **Logo:** `brand.logo.src` (currently `logo.svg`, a placeholder). Wide wordmarks and square marks both fit. For a mark without the company name in it, set `brand.logo.showNameNextToLogo: true`.
-- **Favicon:** `public/favicon.svg`. It's a placeholder that matches the logo mark.
-- **Social preview (OG image):** `public/og-image.png` is a simple placeholder with no text. Replace it with a real **1200×630 PNG or JPG** once the logo is final.
-
 A missing image path fails the build with a message listing the available files.
 
-`scripts/generate-placeholders.mjs` regenerates the placeholder hero, project images and OG image (`node scripts/generate-placeholders.mjs`).
+`scripts/generate-placeholders.mjs` regenerates the placeholder hero and project images (`node scripts/generate-placeholders.mjs`).
+
+## Logo
+
+The client's original artwork is in `src/assets/brand/logo-original-{dark,light}.jpeg`. It's **reference only**: those files are excluded from the build. The site uses clean vector SVGs recreated from them by **`scripts/build-logo.mjs`**:
+
+| File (`src/assets/brand/`) | What | Used for |
+|---|---|---|
+| `logo-full-{dark,light}.svg` | Original layout with tagline (metallic gold) | Footer |
+| `logo-compact-{dark,light}.svg` | Original layout, no tagline | Optional header (`brand.headerLogo: 'compact'`) |
+| `logo-lockup-{dark,light}.svg` | Mark + "TURNKEY RENO" on one line | Header (default, most legible small) |
+| `logo-icon-{dark,light}.svg` | Roof + chimney + window | Favicon base |
+| `logo-mark-{dark,light}.svg` | Roof + window + key-T | Lockup mark |
+
+`dark` = for dark backgrounds (white text), `light` = for light backgrounds (dark text). Text is Montserrat (ExtraBold for "URNKEY", Medium for the tagline, widened Medium for "RENO"), converted to outlines, so no font loads.
+
+The script also writes `public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `logo.png` (used by the LocalBusiness schema) and `og-image.png` (1200×630 social preview). To change geometry, colours or weights, edit the constants at the top of the script and run:
+
+```bash
+node scripts/build-logo.mjs
+```
+
+It uses `opentype.js` and `@fontsource/montserrat` (dev-only) plus `sharp`, which ships with Astro.
+
+**Brand colours:** UI gold `#dba84f` (sampled from the logo), dark gold `#86601a` for small text on light backgrounds, logo gradient `#c79641 → #f3c874 → #c49343`.
 
 ## Connecting the estimate form
 
@@ -89,9 +109,9 @@ While `settings.noindex` is `true` (the default until launch), every page has `<
 - [ ] Form connected (`formConfig.action` + key), with a test submission received
 - [ ] Privacy policy page added and linked in the footer (needed once the form collects data)
 - [ ] Sitemap added (`npx astro add sitemap`), then uncomment the `Sitemap:` line in `src/pages/robots.txt.ts`
-- [ ] Real OG image: 1200×630 PNG/JPG at `public/og-image.png`
+- [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
 - [ ] Real project photos and hero photo in `src/assets/`
-- [ ] Real logo and favicon
+- [x] Real logo and favicon (recreated as SVG from the client artwork)
 - [ ] Confirm the business address. The listed address is in Canton, OH while the copy says "Cleveland-based", and the address feeds the LocalBusiness schema used by local search.
 - [ ] Test on a real phone: call button, menu, gallery, form
 

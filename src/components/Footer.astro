@@ -7,16 +7,15 @@ const { street, suite, city, region, postalCode } = company.address;
 const year = new Date().getFullYear();
 ---
 
-<footer class="relative bg-navy-950 text-slate-300">
+<footer class="on-dark relative bg-navy-950 text-slate-300">
   <div class="h-1.5 bg-stripes opacity-90" aria-hidden="true"></div>
 
   <div class="container-site grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10 lg:py-20">
     <div class="sm:col-span-2 lg:col-span-5">
       <a href="#top" class="inline-flex rounded-[3px]" aria-label={`${company.name}: back to top`}>
-        <Logo class="h-11" maxWidth="max-w-[16rem]" />
+        <Logo variant="full" class="h-28 sm:h-32" />
       </a>
-      <p class="mt-6 font-display text-2xl font-bold tracking-wide text-white uppercase">{company.slogan}</p>
-      <p class="mt-3 max-w-sm leading-relaxed text-slate-400">{footer.blurb}</p>
+      <p class="mt-6 max-w-sm leading-relaxed text-slate-400">{footer.blurb}</p>
     </div>
 
     <nav aria-label="Footer" class="lg:col-span-3">

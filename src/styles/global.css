@@ -14,12 +14,13 @@
   --color-paper-200: #ebe7de;
   --color-stone-line: #ddd7ca;
 
-  --color-accent: #f5a524;
-  --color-accent-300: #fbc867;
-  --color-accent-400: #f8b84e;
-  --color-accent-600: #d98a0b;
-  /* Amber dark enough for text on light backgrounds (AA on paper/white). */
-  --color-accent-700: #9a5b05;
+  /* Gold sampled from the logo (solid; the logo itself uses a metallic gradient). */
+  --color-accent: #dba84f;
+  --color-accent-300: #f0cf8c;
+  --color-accent-400: #e6bd6c;
+  --color-accent-600: #c18e38;
+  /* Dark gold for text on light backgrounds: 5.1:1 on paper, 5.7:1 on white (AA). */
+  --color-accent-700: #86601a;
 
   --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -42,8 +43,19 @@
   [id] {
     scroll-margin-top: 5.5rem;
   }
+  /*
+   * Focus ring: dark gold on light sections (5.1:1 on paper), bright gold inside
+   * dark areas marked .on-dark (8.9:1 on navy). Both clear the 3:1 non-text minimum;
+   * plain gold on paper would only be ~2:1.
+   */
+  :root {
+    --ring: var(--color-accent-700);
+  }
+  .on-dark {
+    --ring: var(--color-accent);
+  }
   :focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 3px solid var(--ring);
     outline-offset: 3px;
   }
   ::selection {
@@ -79,7 +91,7 @@
     @apply translate-x-1;
   }
   .btn-primary {
-    @apply bg-accent text-navy-950 shadow-[0_8px_24px_-10px_rgb(245_165_36/0.7)] hover:bg-accent-400 hover:shadow-[0_12px_28px_-10px_rgb(245_165_36/0.85)] active:translate-y-px;
+    @apply bg-accent text-navy-950 shadow-[0_8px_24px_-10px_rgb(219_168_79/0.6)] hover:bg-accent-400 hover:shadow-[0_12px_28px_-10px_rgb(219_168_79/0.8)] active:translate-y-px;
   }
   .btn-ghost-light {
     @apply text-white ring-1 ring-white/30 ring-inset hover:bg-white/8 hover:ring-white/70 active:translate-y-px;
@@ -94,7 +106,7 @@
   .placeholder-badge {
     @apply inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-0.5 font-sans text-[0.6875rem] font-semibold tracking-wide text-accent-700 uppercase ring-1 ring-accent/40 ring-inset;
   }
-  .placeholder-badge.on-dark {
+  .placeholder-badge.is-dark {
     @apply bg-accent/15 text-accent-300;
   }
 }

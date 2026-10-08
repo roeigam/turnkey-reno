@@ -1,16 +1,21 @@
 ---
-import { company, nav } from '../data/site';
+import { brand, company, nav } from '../data/site';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 ---
 
 <header
   id="site-header"
-  class="sticky top-0 z-50 border-b border-white/[0.06] bg-navy-950 text-white transition-shadow duration-300 data-[scrolled=true]:shadow-[0_10px_30px_-12px_rgb(0_0_0/0.6)]"
+  class="on-dark sticky top-0 z-50 border-b border-white/[0.06] bg-navy-950 text-white transition-shadow duration-300 data-[scrolled=true]:shadow-[0_10px_30px_-12px_rgb(0_0_0/0.6)]"
 >
   <div class="container-site flex h-16 items-center justify-between gap-6 lg:h-20">
     <a href="#top" class="flex min-w-0 items-center rounded-[3px] py-1" aria-label={`${company.name}: back to top`}>
-      <Logo class="h-9 lg:h-11" maxWidth="max-w-[min(60vw,14rem)]" eager />
+      <Logo
+        variant={brand.headerLogo}
+        class={brand.headerLogo === 'lockup' ? 'h-10 lg:h-14' : 'h-11 lg:h-14'}
+        maxWidth="max-w-[min(62vw,16rem)]"
+        eager
+      />
     </a>
 
     <nav aria-label="Main" class="hidden lg:block">

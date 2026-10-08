@@ -54,17 +54,28 @@ export const company = {
 
 /* ── Brand assets ─────────────────────────────────────────────────────────── */
 
+/**
+ * Logo files (paths relative to src/assets/). Generated as vectors by
+ * scripts/build-logo.mjs from the client's originals in src/assets/brand/.
+ *   dark  = for dark backgrounds (white text)
+ *   light = for light backgrounds (dark text)
+ */
 export const brand = {
   logo: {
-    /** Path relative to src/assets/. Wide (wordmark) or square (mark only) both work. */
-    src: 'logo.svg',
     alt: 'Turnkey Reno',
-    /**
-     * Set to true if the logo is a mark only (no company name in the artwork):
-     * the company name will be rendered as text next to it.
-     */
-    showNameNextToLogo: false,
+    /** Original layout with tagline: footer and large uses. */
+    full: { dark: 'brand/logo-full-dark.svg', light: 'brand/logo-full-light.svg' },
+    /** Original layout without tagline. */
+    compact: { dark: 'brand/logo-compact-dark.svg', light: 'brand/logo-compact-light.svg' },
+    /** One-line horizontal lockup: mark + "TURNKEY RENO". Most legible at header sizes. */
+    lockup: { dark: 'brand/logo-lockup-dark.svg', light: 'brand/logo-lockup-light.svg' },
+    /** Roof + window only: favicon-style icon. */
+    icon: { dark: 'brand/logo-icon-dark.svg', light: 'brand/logo-icon-light.svg' },
   },
+  /** Which logo the header uses. 'compact' is the original layout, but "RENO" gets small on phones. */
+  headerLogo: 'lockup' as 'lockup' | 'compact',
+  /** Raster logo in /public for search engines (schema.org). */
+  schemaLogo: '/logo.png',
 };
 
 /* ── SEO ──────────────────────────────────────────────────────────────────── */

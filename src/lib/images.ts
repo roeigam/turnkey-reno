@@ -6,7 +6,11 @@ import type { ImageMetadata } from 'astro';
  * a placeholder SVG for a real JPG/PNG is a content-only change.
  */
 const modules = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/**/*.{jpg,jpeg,png,webp,avif,gif,svg,JPG,JPEG,PNG,WEBP,AVIF}',
+  [
+    '/src/assets/**/*.{jpg,jpeg,png,webp,avif,gif,svg,JPG,JPEG,PNG,WEBP,AVIF}',
+    // Client's original logo files are reference material only; keep them out of the build.
+    '!/src/assets/brand/*-original*',
+  ],
   { eager: true },
 );
 

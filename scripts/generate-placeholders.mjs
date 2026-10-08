@@ -2,13 +2,12 @@
  * Generates placeholder images:
  *   src/assets/hero/hero.svg          hero background (blueprint-style house elevation)
  *   src/assets/projects/project-N.svg gallery placeholders
- *   public/og-image.png               1200×630 social preview (no text; replace before launch)
+ *   (the OG image and favicons are built by scripts/build-logo.mjs)
  *
  * Run: node scripts/generate-placeholders.mjs
  * Safe to re-run; only overwrites the files listed above.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { deflateSync, crc32 } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -55,12 +54,12 @@ const hero = `<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1400"
     <circle cx="1750" cy="600" r="48"/><path d="M1702 600h96M1750 552v96"/>
     <path d="M1150 1200h1250" stroke-opacity=".5"/>
   </g>
-  <g fill="none" stroke="#f5a524" stroke-opacity=".7" stroke-width="2">
+  <g fill="none" stroke="#dba84f" stroke-opacity=".7" stroke-width="2">
     <path d="M1300 330h900M1300 315v30M2200 315v30"/>
     <path d="M2290 720v480M2275 720h30M2275 1200h30"/>
     <path d="M1360 1260h780M1360 1245v30M2140 1245v30"/>
   </g>
-  <g fill="#f5a524" fill-opacity=".85" font-family="${FONT}" font-size="30" font-weight="600" letter-spacing="2">
+  <g fill="#dba84f" fill-opacity=".85" font-family="${FONT}" font-size="30" font-weight="600" letter-spacing="2">
     <text x="1750" y="312" text-anchor="middle">32'-0"</text>
     <text x="2318" y="970" transform="rotate(90 2318 970)" text-anchor="middle">18'-6"</text>
     <text x="1750" y="1300" text-anchor="middle">FRONT ELEVATION</text>
@@ -100,72 +99,10 @@ projects.forEach(([label, from, to], i) => {
     <path d="M300 1200l280-390M650 1200l140-390M950 1200l-140-390M1300 1200l-280-390"/>
   </g>
   <!-- ${label.replace(/&/g, 'and')} -->
-  <path d="M740 520h120" stroke="#f5a524" stroke-width="4"/>
-  <text x="800" y="590" text-anchor="middle" fill="#f5a524" font-family="${FONT}" font-size="40" font-weight="600" letter-spacing="8">PROJECT ${String(n).padStart(2, '0')}</text>
+  <path d="M740 520h120" stroke="#dba84f" stroke-width="4"/>
+  <text x="800" y="590" text-anchor="middle" fill="#dba84f" font-family="${FONT}" font-size="40" font-weight="600" letter-spacing="8">PROJECT ${String(n).padStart(2, '0')}</text>
   <text x="800" y="650" text-anchor="middle" fill="#fff" fill-opacity=".5" font-family="${FONT}" font-size="30" letter-spacing="5">PLACEHOLDER IMAGE</text>
 </svg>
 `;
   write(`src/assets/projects/project-${n}.svg`, svg);
 });
-
-/* ── OG image (PNG, encoded by hand so no image library is needed) ─────────── */
-function png(width, height, pixel) {
-  const raw = Buffer.alloc((width * 3 + 1) * height);
-  for (let y = 0; y < height; y++) {
-    const row = y * (width * 3 + 1);
-    raw[row] = 0; // filter: none
-    for (let x = 0; x < width; x++) {
-      const [r, g, b] = pixel(x, y);
-      raw.set([r, g, b], row + 1 + x * 3);
-    }
-  }
-  const chunk = (type, data) => {
-    const len = Buffer.alloc(4);
-    len.writeUInt32BE(data.length);
-    const td = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(crc32(td) >>> 0);
-    return Buffer.concat([len, td, crc]);
-  };
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(width, 0);
-  ihdr.writeUInt32BE(height, 4);
-  ihdr.set([8, 2, 0, 0, 0], 8); // 8-bit RGB
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(raw, { level: 9 })),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
-}
-
-const NAVY = [7, 14, 26], LINE = [20, 34, 56], MAJOR = [30, 48, 76], AMBER = [245, 165, 36], INK = [11, 22, 38];
-// Simple geometry: grid background, amber tile with roof + "TR" strokes, amber base bar.
-const inRect = (x, y, x0, y0, w, h) => x >= x0 && x < x0 + w && y >= y0 && y < y0 + h;
-const nearSeg = (x, y, ax, ay, bx, by, t) => {
-  const dx = bx - ax, dy = by - ay;
-  const k = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
-  return Math.hypot(x - (ax + k * dx), y - (ay + k * dy)) <= t;
-};
-// Mark: 240px tile at (480,160); scale 5 from the 48px logo mark.
-const M = (v) => v * 5;
-const mx = 480, my = 160, s = 8.75;
-const markStrokes = [
-  [10, 20.5, 24, 9.5], [24, 9.5, 38, 20.5],
-  [10, 26.25, 22, 26.25], [16, 26.25, 16, 38.5],
-  [26.75, 26.25, 26.75, 38.5], [26.75, 26.25, 33, 26.25], [26.75, 33.75, 33, 33.75], [31.5, 33.75, 36.5, 38.5],
-];
-const og = png(1200, 630, (x, y) => {
-  if (inRect(x, y, mx, my, 240, 240)) {
-    const lx = x - mx, ly = y - my;
-    // R bowl (half circle on the right)
-    const bowl = Math.abs(Math.hypot(lx - M(33), ly - M(30)) - M(3.75)) <= s && lx >= M(33);
-    if (bowl || markStrokes.some(([a, b, c, d]) => nearSeg(lx, ly, M(a), M(b), M(c), M(d), s))) return INK;
-    return AMBER;
-  }
-  if (y >= 600) return AMBER;
-  if (x % 150 === 0 || y % 150 === 0) return MAJOR;
-  if (x % 30 === 0 || y % 30 === 0) return LINE;
-  return NAVY;
-});
-write('public/og-image.png', og);
