@@ -101,6 +101,15 @@ While `settings.noindex` is `true` (the default until launch), every page has `<
 
 **At launch, flip `settings.noindex` to `false` and set `company.siteUrl` to the real domain, together.** `siteUrl` drives the canonical URL, Open Graph URLs and the LocalBusiness schema.
 
+## Releases
+
+Each release has a version number ([Semantic Versioning](https://semver.org/)), an annotated git tag (`vX.Y.Z`) and a notes file in [`releases/`](releases/README.md).
+
+- `0.x.y` = pre-launch; `1.0.0` = public launch on the real domain.
+- **Minor** bump: new section, feature, design change or new assets. **Patch** bump: bug fix, copy fix or small style tweak.
+- `package.json` `version` always matches the latest release.
+- Each release is two commits: the changes, then a "Release vX.Y.Z" commit that adds the notes (which reference the changes commit hash), updates the index and `package.json`, and gets the tag.
+
 ## Before launch checklist
 
 - [ ] `company.siteUrl` set to the real domain (no trailing slash)
