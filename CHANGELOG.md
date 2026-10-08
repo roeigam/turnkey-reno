@@ -1,8 +1,47 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.2.1**
+**Current version: 0.2.2**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.2.2] - 2026-10-08
+
+| Field | Value |
+|---|---|
+| Release type | Patch |
+| Previous version | 0.2.1 |
+| Git commit | 8e49439 |
+| Git tag | v0.2.2 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-08) |
+| Status | Pre-launch |
+
+### Summary
+Nothing on the website changed in this release. The project's update history now lives in a single document, this changelog, with the newest version at the top. That makes the full history easy to read in one place.
+
+### Added
+- `CHANGELOG.md`: single Keep a Changelog file containing every release, newest first, with version compare links at the bottom.
+
+### Changed
+- `README.md`: "Releases" section now points to `CHANGELOG.md` and describes adding each new version at the top.
+
+### Removed
+- `releases/` folder: `RELEASE_NOTES_0.1.0.md`, `RELEASE_NOTES_0.2.0.md`, `RELEASE_NOTES_0.2.1.md` and the `README.md` index. Their content was moved into `CHANGELOG.md`.
+
+### Content status
+No content changes. Still placeholder: hero photo, 8 project photos, 6 service descriptions, 3 tips, business email, form service account. Not yet set: production domain, privacy policy page. To confirm with client: Canton, OH address vs "Cleveland-based" copy.
+
+### Verification
+- The 0.1.0, 0.2.0 and 0.2.1 sections of `CHANGELOG.md` were compared by script against the original files at commit 9f24aff. Body text is identical apart from heading levels, and all metadata rows are present.
+- No remaining links to `releases/` in tracked files. The 0.2.1 entry still names the folder, because it records what that release added.
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- No site code changed, so the browser checks from 0.2.0 were not repeated.
+
+### Known issues
+- Carried over from 0.2.0: the focus outline briefly fades in from the text color (~150ms); unused logo variants are copied into `dist/_astro/`.
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-08. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.2.1`.
 
 ## [0.2.1] - 2026-10-08
 
@@ -193,6 +232,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.2.2]: https://github.com/roeigam/turnkey-reno/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/roeigam/turnkey-reno/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/roeigam/turnkey-reno/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/roeigam/turnkey-reno/releases/tag/v0.1.0
