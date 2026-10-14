@@ -1,6 +1,6 @@
 # Turnkey Reno: marketing site
 
-One-page static site for a Cleveland home renovation company. The site has one goal: get visitors to **call** or **request a free estimate**.
+One-page static site for a Northeast Ohio home renovation company. The site has one goal: get visitors to **call** or **request a free estimate**.
 
 **Stack:** Astro 7 · Tailwind CSS 4 · TypeScript (strict) · fully static output, no backend.
 
@@ -86,7 +86,7 @@ accessKey: '',
 honeypotName: '_gotcha',
 ```
 
-The form validates on the client (name, phone, email, 5-digit zip and service are required) and then submits via `fetch` with an inline success/error message. Without JavaScript it falls back to a normal POST. A hidden honeypot field catches basic spam bots.
+The form validates on the client (name, phone, 5-digit zip and service are required; email, budget and "I am a…" are optional, and email is format-checked only when filled in) and then submits via `fetch` with an inline success/error message. Without JavaScript it falls back to a normal POST. A hidden honeypot field catches basic spam bots.
 
 ## Deploying
 
@@ -119,9 +119,11 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] Privacy policy page added and linked in the footer (needed once the form collects data)
 - [ ] Sitemap added (`npx astro add sitemap`), then uncomment the `Sitemap:` line in `src/pages/robots.txt.ts`
 - [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
-- [ ] Real project photos and hero photo in `src/assets/`
+- [ ] Real project photos and hero photo in `src/assets/`, with real captions in `projects[]` (format: "Kitchen Remodel · North Canton, OH")
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
-- [ ] Confirm the business address. The listed address is in Canton, OH while the copy says "Cleveland-based", and the address feeds the LocalBusiness schema used by local search.
+- [ ] Confirm "Licensed, insured & guaranteed" (Why Us, advantage 8) is true before publishing
+- [ ] Confirm the "within 24 hours" response promise (estimate section intro) is realistic
+- [ ] Consider a domain email (e.g. info@yourdomain.com) instead of the Gmail address
 - [ ] Test on a real phone: call button, menu, gallery, form
 
 ## Project structure

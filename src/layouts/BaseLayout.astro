@@ -31,7 +31,7 @@ const jsonLd = {
     postalCode,
     addressCountry: country,
   },
-  areaServed: company.areaServed.map((name) => ({ '@type': 'City', name })),
+  areaServed: company.areaServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
 };
 ---
 

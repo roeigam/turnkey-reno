@@ -3,7 +3,6 @@ import { Image, getImage } from 'astro:assets';
 import { projects, projectsIntro } from '../data/site';
 import { asset, isSvg } from '../lib/images';
 import Icon from './Icon.astro';
-import PlaceholderBadge from './PlaceholderBadge.astro';
 import SectionHeading from './SectionHeading.astro';
 
 // Bento rhythm, repeating every 8 items: one feature tile (2×2), one wide tile (2×1), the rest 1×1.
@@ -19,18 +18,17 @@ const items = await Promise.all(
     const src = asset(project.image);
     // Large version for the lightbox (raster → WebP, max 2000px wide; SVG passes through).
     const full = await getImage({ src, width: Math.min(src.width, 2000) });
-    return { ...project, src, full: full.src };
+    // Caption format: 'Kitchen Remodel · North Canton, OH' → work type + location.
+    const [work = '', place = ''] = project.caption.split(/\s*·\s*/);
+    return { ...project, src, full: full.src, work, place };
   }),
 );
-const anyPlaceholder = projects.some((p) => p.placeholder);
 ---
 
 <section id="projects" aria-labelledby="projects-heading" class="bg-white py-24 sm:py-28 lg:py-36">
   <div class="container-site">
     <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-      <SectionHeading id="projects-heading" eyebrow={projectsIntro.eyebrow} heading={projectsIntro.heading} text={projectsIntro.text}>
-        <PlaceholderBadge show={anyPlaceholder} class="mt-5" />
-      </SectionHeading>
+      <SectionHeading id="projects-heading" eyebrow={projectsIntro.eyebrow} heading={projectsIntro.heading} text={projectsIntro.text} />
       <a href="#estimate" class="btn btn-dark self-start lg:self-end" data-reveal>
         Start Your Project
         <Icon name="arrow" class="btn-arrow" />
@@ -52,7 +50,7 @@ const anyPlaceholder = projects.some((p) => p.placeholder);
               data-full={item.full}
               data-alt={item.alt}
               data-caption={item.caption}
-              aria-label={`View larger: ${item.caption}`}
+              aria-label={`View larger: ${item.caption || item.alt}`}
               aria-haspopup="dialog"
             >
               <Image
@@ -66,17 +64,17 @@ const anyPlaceholder = projects.some((p) => p.placeholder);
                     })}
                 class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
               />
-              <span class="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-transparent opacity-90 transition-opacity duration-500 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-visible:opacity-100" />
-              <span class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-3.5 sm:p-5 lg:translate-y-3 lg:opacity-0 lg:transition lg:duration-500 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-visible:translate-y-0 lg:group-focus-visible:opacity-100">
-                <span>
-                  <span class="block h-0.5 w-6 bg-accent" />
-                  <span class="mt-2 block font-display text-base leading-tight font-bold tracking-wider text-white uppercase sm:text-xl">
-                    {item.caption}
+              {
+                item.caption && (
+                  <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/55 to-transparent px-3.5 pt-12 pb-3 sm:px-5 sm:pb-4">
+                    <span class="block h-0.5 w-6 bg-accent" />
+                    <span class="mt-2 block font-display text-sm leading-tight font-bold tracking-wider text-white uppercase sm:text-lg">{item.work}</span>
+                    {item.place && <span class="mt-0.5 block text-xs text-slate-300 sm:text-sm">{item.place}</span>}
                   </span>
-                </span>
-                <span class="hidden size-10 shrink-0 place-items-center rounded-full bg-accent text-navy-950 sm:grid">
-                  <Icon name="expand" class="size-[18px]" strokeWidth={2} />
-                </span>
+                )
+              }
+              <span class="absolute top-3 right-3 hidden size-10 place-items-center rounded-full bg-accent text-navy-950 opacity-0 shadow-lg transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 sm:grid">
+                <Icon name="expand" class="size-[18px]" strokeWidth={2} />
               </span>
             </button>
           </li>
@@ -108,7 +106,7 @@ const anyPlaceholder = projects.some((p) => p.placeholder);
 
       <figure class="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 sm:px-20">
         <img data-lb-img src="" alt="" class="max-h-full min-h-0 w-auto max-w-full rounded-[3px] object-contain shadow-2xl transition-opacity duration-300" />
-        <figcaption class="mt-4 mb-2 flex items-center gap-3 font-display text-xl font-bold tracking-wider uppercase">
+        <figcaption data-lb-figcaption class="mt-4 mb-2 flex items-center gap-3 font-display text-lg font-bold tracking-wider uppercase sm:text-xl">
           <span class="h-0.5 w-6 bg-accent"></span>
           <span data-lb-caption></span>
         </figcaption>
@@ -149,6 +147,7 @@ const anyPlaceholder = projects.some((p) => p.placeholder);
   const thumbs = [...document.querySelectorAll<HTMLButtonElement>('[data-gallery] button[data-full]')];
   const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
   const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+  const figcaption = dialog.querySelector<HTMLElement>('[data-lb-figcaption]')!;
   const counter = dialog.querySelector<HTMLElement>('[data-lb-counter]')!;
   let index = 0;
   let opener: HTMLElement | null = null;
@@ -159,6 +158,7 @@ const anyPlaceholder = projects.some((p) => p.placeholder);
     img.src = t.full!;
     img.alt = t.alt ?? '';
     caption.textContent = t.caption ?? '';
+    figcaption.hidden = !t.caption; // no empty caption row for photos without a caption
     counter.textContent = `${index + 1} / ${thumbs.length}`;
     // Warm the cache for neighbours.
     [index - 1, index + 1].forEach((n) => {

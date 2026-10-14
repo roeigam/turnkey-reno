@@ -3,12 +3,13 @@
 import { settings } from '../data/site';
 
 interface Props {
+  /** Must be true for the badge to render (pass the item's `placeholder` flag). */
   show?: boolean;
   dark?: boolean;
   class?: string;
 }
 
-const { show = true, dark = false, class: className } = Astro.props;
+const { show = false, dark = false, class: className } = Astro.props;
 ---
 
 {

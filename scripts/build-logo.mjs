@@ -246,7 +246,7 @@ const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" vi
 <rect width="1200" height="630" fill="url(#minor)"/>
 <rect width="1200" height="630" fill="url(#major)"/>
 ${full}
-<path d="${setText(fonts.tagline, 'HOME RENOVATION  ·  CLEVELAND, OHIO', 0, 0, 18, 5).d}" fill="#cbd5e1" transform="translate(${(600 - setText(fonts.tagline, 'HOME RENOVATION  ·  CLEVELAND, OHIO', 0, 0, 18, 5).width / 2).toFixed(1)} 470)"/>
+<path d="${setText(fonts.tagline, 'HOME RENOVATION  ·  NORTHEAST OHIO', 0, 0, 18, 5).d}" fill="#cbd5e1" transform="translate(${(600 - setText(fonts.tagline, 'HOME RENOVATION  ·  NORTHEAST OHIO', 0, 0, 18, 5).width / 2).toFixed(1)} 470)"/>
 <rect x="0" y="606" width="1200" height="24" fill="${COLORS.dark.gold}"/>
 </svg>`;
 await png(og, 1200, 630, 'public/og-image.png');

@@ -7,6 +7,8 @@ const field =
 const label = 'mb-2 block text-sm font-semibold text-navy-900';
 const error = 'mt-1.5 hidden text-sm font-medium text-red-700';
 const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
+const optional = '<span class="font-normal text-slate-500">(optional)</span>';
+const select = 'appearance-none pr-12';
 ---
 
 <section id="estimate" aria-labelledby="estimate-heading" class="relative bg-paper py-24 sm:py-28 lg:py-36">
@@ -47,6 +49,22 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
             <Icon name="phone" class="size-7 text-accent" />
             {company.phoneDisplay}
           </a>
+          <ul class="mt-4 space-y-2 text-slate-300">
+            {
+              company.email && (
+                <li>
+                  <a href={`mailto:${company.email}`} class="inline-flex items-center gap-3 break-all transition-colors hover:text-white">
+                    <Icon name="mail" class="size-5 shrink-0 text-accent" />
+                    {company.email}
+                  </a>
+                </li>
+              )
+            }
+            <li class="flex items-center gap-3">
+              <Icon name="pin" class="size-5 shrink-0 text-accent" />
+              Serving {company.serviceArea}
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -71,6 +89,23 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
             <label for="hp-field">Leave this field empty</label>
             <input type="text" id="hp-field" name={formConfig.honeypotName} tabindex="-1" autocomplete="off" />
           </div>
+
+          <!-- I am a… (optional): segmented radio choice -->
+          <fieldset class="sm:col-span-2">
+            <legend class={label}>I am a… <Fragment set:html={optional} /></legend>
+            <div class="grid grid-cols-2 gap-3">
+              {
+                estimate.customerTypes.map((type, i) => (
+                  <label class="relative cursor-pointer">
+                    <input type="radio" name="customer_type" value={type} id={`f-type-${i}`} class="peer sr-only" />
+                    <span class="flex h-12 items-center justify-center rounded-[3px] border border-navy-900/15 bg-paper/50 px-3 text-center text-sm font-semibold text-navy-900 transition peer-checked:border-navy-900 peer-checked:bg-navy-900 peer-checked:text-white peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent-700 peer-focus-visible:outline-solid hover:border-navy-900/35 sm:text-base">
+                      {type}
+                    </span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
 
           <div>
             <label for="f-name" class={label}>Full name <Fragment set:html={req} /></label>
@@ -97,18 +132,16 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
           </div>
 
           <div>
-            <label for="f-email" class={label}>Email <Fragment set:html={req} /></label>
+            <label for="f-email" class={label}>Email <Fragment set:html={optional} /></label>
             <input
               id="f-email"
               name="email"
               type="email"
               inputmode="email"
               autocomplete="email"
-              required
               class={field}
               aria-describedby="f-email-error"
               data-validate="email"
-              data-error-required="Please enter your email address."
               data-error-invalid="Please enter a valid email address, like name@example.com."
             />
             <p id="f-email-error" class={error}></p>
@@ -133,10 +166,10 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
             <p id="f-zip-error" class={error}></p>
           </div>
 
-          <div class="sm:col-span-2">
+          <div>
             <label for="f-service" class={label}>Service needed <Fragment set:html={req} /></label>
             <div class="relative">
-              <select id="f-service" name="service" required class:list={[field, 'appearance-none pr-12']} aria-describedby="f-service-error" data-error-required="Please choose a service.">
+              <select id="f-service" name="service" required class:list={[field, select]} aria-describedby="f-service-error" data-error-required="Please choose a service.">
                 <option value="" selected disabled>Select a service…</option>
                 {services.map((s) => <option value={s.title}>{s.title}</option>)}
                 <option value="Other / Not sure">Other / Not sure</option>
@@ -144,6 +177,17 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
               <Icon name="chevronRight" class="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 rotate-90 text-slate-500" />
             </div>
             <p id="f-service-error" class={error}></p>
+          </div>
+
+          <div>
+            <label for="f-budget" class={label}>Estimated budget <Fragment set:html={optional} /></label>
+            <div class="relative">
+              <select id="f-budget" name="budget" class:list={[field, select]}>
+                <option value="" selected>Select a range…</option>
+                {estimate.budgets.map((b) => <option value={b}>{b}</option>)}
+              </select>
+              <Icon name="chevronRight" class="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 rotate-90 text-slate-500" />
+            </div>
           </div>
 
           <div class="sm:col-span-2">
@@ -154,12 +198,12 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
               rows="5"
               maxlength="3000"
               class:list={[field, 'h-auto py-3 leading-relaxed']}
-              placeholder="Rooms involved, rough timeline, owner-occupied or investment property…"></textarea>
+              placeholder="Rooms involved, rough timeline, anything we should know…"></textarea>
           </div>
 
           <div class="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm text-slate-500"><span class="text-accent-700" aria-hidden="true">*</span> Required. {estimate.privacyNote}</p>
-            <button type="submit" class="btn btn-primary btn-lg shrink-0 disabled:cursor-wait disabled:opacity-70">
+            <button type="submit" class="btn btn-primary btn-lg w-full shrink-0 px-5 disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-8">
               <span data-submit-label>{estimate.submitLabel}</span>
               <Icon name="arrow" class="btn-arrow" />
             </button>
@@ -183,7 +227,8 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
   const form = document.getElementById('estimate-form') as HTMLFormElement;
   const status = document.getElementById('form-status')!;
   const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-  const fields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[required]')];
+  // Required fields plus optional ones with a format check (email: validated only when filled in).
+  const fields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[required], [data-validate]')];
 
   const validators: Record<string, (v: string) => boolean> = {
     phone: (v) => {
@@ -197,8 +242,9 @@ const req = '<span class="text-accent-700" aria-hidden="true">*</span>';
   const validate = (el: HTMLInputElement | HTMLSelectElement) => {
     const value = el.value.trim();
     let message = '';
-    if (!value) message = el.dataset.errorRequired ?? 'This field is required.';
-    else if (el.dataset.validate && !validators[el.dataset.validate](value)) message = el.dataset.errorInvalid ?? 'Please check this field.';
+    if (!value) {
+      if (el.required) message = el.dataset.errorRequired ?? 'This field is required.';
+    } else if (el.dataset.validate && !validators[el.dataset.validate](value)) message = el.dataset.errorInvalid ?? 'Please check this field.';
 
     const errorEl = document.getElementById(`${el.id}-error`);
     el.setAttribute('aria-invalid', String(!!message));

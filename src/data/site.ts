@@ -38,7 +38,8 @@ export const company = {
   phoneDisplay: '(440) 337-5140',
   /** E.164 format, used for tel: links and schema. */
   phoneE164: '+14403375140',
-  email: '', // e.g. 'info@turnkeyreno.com'. Leave empty to hide.
+  /** Shown in the estimate section and footer, and added to the schema. Leave empty to hide. */
+  email: 'turnkeyrenousa@gmail.com',
   address: {
     street: '6545 Market Ave. North',
     suite: 'STE 100',
@@ -47,9 +48,10 @@ export const company = {
     postalCode: '44721',
     country: 'US',
   },
-  serviceArea: 'Cleveland, OH and surrounding suburbs',
-  /** Cities listed as areaServed in the LocalBusiness schema. */
-  areaServed: ['Cleveland, OH'],
+  /** Shown as "Serving <serviceArea>" in the footer and estimate section. */
+  serviceArea: 'Northeast Ohio',
+  /** Regions listed as areaServed in the LocalBusiness schema. */
+  areaServed: ['Northeast Ohio'],
 };
 
 /* ── Brand assets ─────────────────────────────────────────────────────────── */
@@ -81,12 +83,12 @@ export const brand = {
 /* ── SEO ──────────────────────────────────────────────────────────────────── */
 
 export const seo = {
-  title: 'Turnkey Reno | Home Renovation & Remodeling in Cleveland, OH',
+  title: 'Turnkey Reno | Home Renovation & Remodeling in Northeast Ohio',
   description:
-    'Cleveland home renovation and remodeling for homeowners and real estate investors. Kitchens, bathrooms, basements, flooring and more. Call (440) 337-5140 for a free estimate.',
-  /** Path inside /public. Replace with a real 1200×630 PNG or JPG before launch. */
+    'Northeast Ohio home renovation and remodeling for homeowners and real estate investors. Kitchens, bathrooms, basements, flooring and more. Call (440) 337-5140 for a free estimate.',
+  /** Path inside /public. Built by scripts/build-logo.mjs (1200×630). */
   ogImage: '/og-image.png',
-  ogImageAlt: 'Turnkey Reno: home renovation in Cleveland, Ohio',
+  ogImageAlt: 'Turnkey Reno: home renovation in Northeast Ohio',
   locale: 'en_US',
   themeColor: '#070e1a',
 };
@@ -104,13 +106,13 @@ export const nav = [
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 
 export const hero = {
-  eyebrow: 'Cleveland Home Renovation',
+  eyebrow: 'Northeast Ohio Home Renovation',
   // The headline is company.slogan. Text after the comma is highlighted.
   subheading:
-    'Renovation and remodeling for homeowners and real estate investors across Cleveland and the surrounding suburbs, done right from start to finish.',
+    "Full-service home renovation for homeowners and real estate investors across Ohio's suburbs. We plan your project around your budget, bring creative solutions to the table, and stay on the job until you're 100% satisfied.",
   primaryCta: 'Get a Free Estimate',
   secondaryCta: 'Call Now',
-  highlights: ['Free, no-obligation estimates', 'Homeowners & investors'],
+  highlights: ['Free, no-obligation estimates', 'Budget-based planning', 'Homeowners & investors'],
   image: {
     src: 'hero/hero.svg', // placeholder: replace with a wide project photo (≥ 2400px)
     alt: '',              // decorative background; leave empty unless it conveys information
@@ -138,7 +140,7 @@ export const trustPoints: { title: string; text: string; icon: IconName }[] = [
 export const servicesIntro = {
   eyebrow: 'What we do',
   heading: 'Renovation services',
-  text: 'From a single room to a full rehab, we handle the work that turns a house into the home, or the rental, you want.',
+  text: 'From a single room to a full rehab, we plan every project around your goals and your budget, and handle the work that turns a house into the home, or the rental, you want.',
 };
 
 export interface Service {
@@ -155,42 +157,36 @@ export const services: Service[] = [
     title: 'Interior Remodeling',
     description: 'Full and partial interior updates (layouts, trim, finishes and paint) planned and managed from start to finish.',
     icon: 'paint',
-    placeholder: true,
   },
   {
     id: 'kitchen',
     title: 'Kitchen Remodeling',
     description: 'Cabinets, countertops, backsplash, lighting and layout changes for a kitchen that works the way you live.',
     icon: 'kitchen',
-    placeholder: true,
   },
   {
     id: 'bathroom',
     title: 'Bathroom Remodeling',
     description: 'Tile, vanities, fixtures and tub-to-shower conversions, from a quick refresh to a complete gut renovation.',
     icon: 'bath',
-    placeholder: true,
   },
   {
     id: 'basement',
     title: 'Basement Finishing',
-    description: 'Turn unused basement space into a family room, home office, guest suite or extra rental living area.',
+    description: 'Turn an unused basement into a family room, home office, guest suite or extra rental space, finished right and built to stay dry.',
     icon: 'stairs',
-    placeholder: true,
   },
   {
     id: 'flooring',
     title: 'Flooring',
     description: 'Luxury vinyl plank, tile, laminate and hardwood, installed over a properly prepared, level subfloor.',
     icon: 'floor',
-    placeholder: true,
   },
   {
     id: 'drywall-framing',
     title: 'Drywall & Framing',
     description: 'New walls, repairs and finishing: framing, hanging, taping and texture done clean and straight.',
     icon: 'framing',
-    placeholder: true,
   },
 ];
 
@@ -200,14 +196,20 @@ export const about = {
   eyebrow: 'Why choose us',
   heading: 'Done right, from start to finish.',
   paragraphs: [
-    'We are a Cleveland-based home renovation company serving homeowners and investors throughout Cleveland and the surrounding suburbs. We specialize in residential renovations and remodeling, with a strong focus on quality workmanship, honest pricing, and reliable service.',
-    'We believe every project should be done right from start to finish. We pay attention to the details, use quality materials, and stand behind our work. Our goal is to provide a smooth, professional experience and results our customers can be proud of.',
+    "We're a Northeast Ohio home renovation company serving homeowners and real estate investors across Ohio's suburbs. We specialize in residential renovation and remodeling, with a strong focus on quality workmanship, honest pricing and reliable service.",
+    "Every project starts with listening. We sit down with you, plan the renovation around your goals and your budget, and bring creative solutions that get you more for your money. Then we stay on the job until it's done right and you're completely satisfied.",
   ],
+  /** Advantages grid: 2 columns × 4 rows on desktop, 1 column on mobile. Titles render uppercase. */
   values: [
-    { title: 'Quality workmanship', text: 'Attention to the details that make a renovation last.' },
-    { title: 'Honest pricing', text: 'Clear estimates and straightforward communication.' },
-    { title: 'Reliable service', text: 'We keep you informed and see the job through.' },
-    { title: 'We stand behind our work', text: 'Results you can be proud of, built with quality materials.' },
+    { title: 'Creative, budget-based planning', text: 'We design the project with you, around the budget you set.' },
+    { title: 'Transparent estimates', text: 'Detailed, honest pricing. No surprises halfway through.' },
+    { title: 'One point of contact', text: 'One person who knows your project from first visit to final walkthrough.' },
+    { title: 'Photo progress updates', text: 'Regular updates with photos, so you always know where things stand, even from out of state.' },
+    { title: 'Investor-smart renovations', text: 'Upgrades chosen for return, whether you plan to rent or sell.' },
+    { title: 'On schedule', text: 'Realistic timelines, and we stick to them.' },
+    { title: 'Clean, respectful job sites', text: 'We treat your home like our own and clean up every day.' },
+    // CONFIRM WITH CLIENT before launch: licensed + insured must be true.
+    { title: 'Licensed, insured & guaranteed', text: "We stand behind our work until you're satisfied." },
   ],
   ctaText: 'Talk to us about your project',
   /** Large faint outlined word behind the section (desktop only, decorative). Empty string hides it. */
@@ -219,26 +221,33 @@ export const about = {
 export const projectsIntro = {
   eyebrow: 'Our work',
   heading: 'Projects',
-  text: 'A look at the kind of renovations we take on. Tap any photo to view it larger.',
+  text: 'Real projects, real results. Click or tap any photo to see the full transformation.',
 };
 
 export interface Project {
   /** Path relative to src/assets/ (jpg, png, webp, avif or svg). */
   image: string;
+  /** Describes the photo for screen readers and search engines. */
   alt: string;
+  /**
+   * Short caption shown on the thumbnail and in the lightbox:
+   * work type + city, e.g. 'Kitchen Remodel · North Canton, OH'.
+   * Leave empty ('') until the real photo arrives; nothing is shown when empty.
+   */
   caption: string;
   placeholder?: boolean;
 }
 
+// Placeholder images: captions stay empty until real photos (with real locations) arrive.
 export const projects: Project[] = [
-  { image: 'projects/project-1.svg', alt: 'Placeholder for a kitchen remodel photo', caption: 'Kitchen Remodel', placeholder: true },
-  { image: 'projects/project-2.svg', alt: 'Placeholder for a bathroom renovation photo', caption: 'Bathroom Renovation', placeholder: true },
-  { image: 'projects/project-3.svg', alt: 'Placeholder for a finished basement photo', caption: 'Basement Finishing', placeholder: true },
-  { image: 'projects/project-4.svg', alt: 'Placeholder for a flooring installation photo', caption: 'Flooring Installation', placeholder: true },
-  { image: 'projects/project-5.svg', alt: 'Placeholder for an interior remodel photo', caption: 'Interior Remodel', placeholder: true },
-  { image: 'projects/project-6.svg', alt: 'Placeholder for an open living space photo', caption: 'Open Living Space', placeholder: true },
-  { image: 'projects/project-7.svg', alt: 'Placeholder for a tiled shower photo', caption: 'Walk-in Shower', placeholder: true },
-  { image: 'projects/project-8.svg', alt: 'Placeholder for a drywall and framing photo', caption: 'Drywall & Framing', placeholder: true },
+  { image: 'projects/project-1.svg', alt: 'Placeholder project photo 1', caption: '', placeholder: true },
+  { image: 'projects/project-2.svg', alt: 'Placeholder project photo 2', caption: '', placeholder: true },
+  { image: 'projects/project-3.svg', alt: 'Placeholder project photo 3', caption: '', placeholder: true },
+  { image: 'projects/project-4.svg', alt: 'Placeholder project photo 4', caption: '', placeholder: true },
+  { image: 'projects/project-5.svg', alt: 'Placeholder project photo 5', caption: '', placeholder: true },
+  { image: 'projects/project-6.svg', alt: 'Placeholder project photo 6', caption: '', placeholder: true },
+  { image: 'projects/project-7.svg', alt: 'Placeholder project photo 7', caption: '', placeholder: true },
+  { image: 'projects/project-8.svg', alt: 'Placeholder project photo 8', caption: '', placeholder: true },
 ];
 
 /* ── Tips corner ──────────────────────────────────────────────────────────── */
@@ -246,24 +255,40 @@ export const projects: Project[] = [
 export const tipsIntro = {
   eyebrow: 'Tips corner',
   heading: 'Before you renovate',
-  text: 'Practical advice for homeowners and investors planning their next project.',
+  text: 'Practical advice from the job site for homeowners and investors planning their next project.',
 };
 
-export const tips: { title: string; body: string; placeholder?: boolean }[] = [
+/** Tips grid: 3 columns × 2 rows on desktop, 1 column on mobile. `tag` is the small category label. */
+export const tips: { tag: string; title: string; body: string; placeholder?: boolean }[] = [
   {
+    tag: 'Budget',
     title: 'Build a cushion into your budget',
     body: 'Plan for 10–15% beyond your estimate. Older homes can hide surprises behind walls and under floors, and a cushion keeps the project moving.',
-    placeholder: true,
   },
   {
+    tag: 'Planning',
     title: 'Pick finishes before work starts',
     body: 'Choosing tile, fixtures and flooring up front keeps the schedule on track and avoids costly mid-project changes.',
-    placeholder: true,
   },
   {
+    tag: 'Investors',
     title: 'Investors: renovate for durability',
     body: 'Tough, easy-to-clean materials like luxury vinyl plank and quality paint reduce turnover costs between tenants.',
-    placeholder: true,
+  },
+  {
+    tag: 'Ohio Homes',
+    title: 'Fix water issues first',
+    body: 'In Ohio, basement moisture is common. Before finishing a basement or replacing floors, make sure gutters, grading and drainage are handled, or the problem comes back.',
+  },
+  {
+    tag: 'Seasonal',
+    title: 'Plan around the seasons',
+    body: 'Exterior work like roofing, siding and painting is best done spring through fall. Winter is a great time for kitchens, baths and basements.',
+  },
+  {
+    tag: 'Value',
+    title: 'Spend where it counts',
+    body: 'Kitchens, bathrooms and fresh flooring usually return the most when you sell or rent. Start there before cosmetic extras.',
   },
 ];
 
@@ -272,12 +297,16 @@ export const tips: { title: string; body: string; placeholder?: boolean }[] = [
 export const estimate = {
   eyebrow: 'Free estimate',
   heading: 'Tell us about your project',
-  text: "Send us a few details and we'll get back to you to talk through your project and set up your free estimate.",
+  // CONFIRM WITH CLIENT before launch: 24-hour response must be realistic.
+  text: "Send us a few details and we'll get back to you within 24 hours to talk through your project and set up your free estimate.",
   steps: [
     { title: 'Send your request', text: 'Fill out the form or give us a call.' },
     { title: 'We reach out', text: 'We contact you to discuss the details.' },
-    { title: 'Get your estimate', text: 'A clear, honest quote. Free, with no obligation.' },
+    { title: 'Get your estimate', text: 'A clear, detailed quote built around your budget. Free, with no obligation.' },
   ],
+  /** Optional form fields. Values are sent with the request exactly as written. */
+  customerTypes: ['Homeowner', 'Real estate investor'],
+  budgets: ['Under $10k', '$10k–$25k', '$25k–$50k', '$50k+', 'Not sure'],
   submitLabel: 'Request My Free Estimate',
   privacyNote: 'We only use your information to respond to your request.',
   successMessage: "Thanks! Your request was sent. We'll be in touch soon.",
@@ -303,5 +332,5 @@ export const formConfig = {
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 
 export const footer = {
-  blurb: 'Residential renovation and remodeling for homeowners and investors in Cleveland and the surrounding suburbs.',
+  blurb: 'Residential renovation and remodeling for homeowners and real estate investors across Northeast Ohio.',
 };
