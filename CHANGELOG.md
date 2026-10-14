@@ -1,8 +1,108 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.2.2**
+**Current version: 0.3.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.3.0] - 2026-10-14
+
+| Field | Value |
+|---|---|
+| Release type | Minor |
+| Previous version | 0.2.2 |
+| Git commit | 30759d5 |
+| Git tag | v0.3.0 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-14) |
+| Status | Pre-launch |
+
+### Summary
+The website now carries Turnkey Reno's final wording throughout and describes the service area as Northeast Ohio instead of Cleveland. "Why Us" lists eight concrete advantages, and the Tips section has six practical tips with topic labels. The estimate form now asks whether the visitor is a homeowner or an investor and their rough budget, both optional, and email is no longer required. The business email appears next to the phone number. The only content still waiting are the real project photos and the main background photo.
+
+### Added
+- Why Us (`About.astro`): 8 advantages in a 2-column grid on desktop (1 column on mobile); the left column (heading, phone) is now sticky on desktop and gains a "Get a Free Estimate" button.
+- Tips (`Tips.astro`): 3 new tips (Fix water issues first, Plan around the seasons, Spend where it counts); a category tag on each tip (`tip.tag` in `site.ts`), styled as a square outline label, distinct from the placeholder badge; grid is 3 × 2 on desktop, 2 columns on tablet, 1 on mobile.
+- Projects (`Projects.astro`): optional caption per photo (`projects[].caption`, format "Kitchen Remodel · North Canton, OH"), shown as work type + location over the thumbnail and in the lightbox. Captions are empty until real photos arrive; empty captions render no overlay and no lightbox caption row.
+- Estimate form (`EstimateForm.astro`):
+  - optional "I am a…" choice (Homeowner / Real estate investor), sent as `customer_type`;
+  - optional "Estimated budget" select (Under $10k / $10k–$25k / $25k–$50k / $50k+ / Not sure), sent as `budget`.
+- Estimate section: business email (mailto link) and "Serving Northeast Ohio" under the "Prefer to talk?" phone number.
+- `company.email` = turnkeyrenousa@gmail.com, now shown in the footer contact block and included in the LocalBusiness JSON-LD.
+- `site.ts`: "CONFIRM WITH CLIENT before launch" comments on advantage 8 (licensed, insured & guaranteed) and on the 24-hour response promise.
+- README launch checklist: confirm "Licensed, insured & guaranteed", confirm the 24-hour response, real project photos with captions, consider a domain email instead of Gmail.
+
+### Changed
+- Service area "Cleveland" → "Northeast Ohio" in:
+  - `seo.title` and `seo.description`, `seo.ogImageAlt`;
+  - `company.serviceArea` (footer and estimate "Serving …" lines);
+  - `company.areaServed`;
+  - `hero.eyebrow`, `about.paragraphs[0]`, `footer.blurb`;
+  - the OG image subtitle in `scripts/build-logo.mjs` (`public/og-image.png` regenerated);
+  - the README intro line.
+- JSON-LD `areaServed`: type `City` → `AdministrativeArea` (Northeast Ohio is a region, not a city).
+- Hero: new subheadline; trust line now has 3 items (added "Budget-based planning").
+- Services: new intro text; Basement Finishing description updated.
+- Why Us: both paragraphs replaced with client-final text; the 4 value points replaced by the 8 advantages.
+- Projects: new subheadline; placeholder alt texts made neutral ("Placeholder project photo 1–8").
+- Tips: new subheadline; tighter padding and type size on mobile.
+- Estimate section: intro now promises a reply within 24 hours; step 3 text updated.
+- Estimate form:
+  - email is optional, and its format is checked only when filled in;
+  - "Service needed" and "Estimated budget" sit side by side;
+  - the message placeholder text no longer asks about owner/investor;
+  - the submit button stays on one line on mobile (full width, reduced padding).
+- `PlaceholderBadge.astro`: now hidden unless `show` is explicitly true.
+- README: form validation note updated (email optional).
+
+### Fixed
+- Placeholder badges appeared on every service card and tip once their `placeholder` flags were removed (the badge's `show` prop defaulted to true). Found during this round's checks, before release.
+
+### Removed
+- Placeholder flags on all 6 services and all tips (client-approved).
+- Projects section-level "Placeholder" badge.
+- Project captions invented for the placeholder images ("Kitchen Remodel", etc.).
+- README checklist item about the Canton address vs "Cleveland-based" copy: Canton is in Northeast Ohio, so the conflict no longer exists.
+
+### Content status
+- Client-final in this release: hero copy, services (all 6 + intro), Why Us paragraphs and 8 advantages, projects subheadline, all 6 tips, estimate intro and steps, business email, service area.
+- Still placeholder: 8 project photos (with captions to come) and the hero background photo. There is no owner photo on the site.
+- To confirm with client before launch: "Licensed, insured & guaranteed" is accurate; the 24-hour response promise is realistic.
+- Not yet set: production domain, privacy policy page, form service account.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- "Cleveland" search: no matches left in source, README or the built `dist/index.html`. The only matches are in older CHANGELOG entries, which are kept as written.
+- Built JSON-LD contains `"email":"turnkeyrenousa@gmail.com"` and `areaServed` `[{"@type":"AdministrativeArea","name":"Northeast Ohio"}]`.
+- OG image regenerated and checked visually ("HOME RENOVATION · NORTHEAST OHIO").
+- Automated browser checks (Playwright driving Microsoft Edge), desktop 1440×900 and mobile 390×844:
+  - horizontal overflow 0px on both, and no elements past the right edge;
+  - Why Us shows 8 items, Tips shows 6 items;
+  - visible placeholder badges: 1 on desktop (hero photo), 0 on mobile;
+  - no console or page errors.
+- Section heights:
+
+  | Section | Desktop | Mobile |
+  |---|---|---|
+  | Hero | 899px | 828px |
+  | Why Us | 1286px | 1860px |
+  | Tips | 1142px | 1688px (was 2048px before tightening) |
+  | Estimate | 1123px | 2129px |
+
+- Projects: no caption overlays render while captions are empty, and the lightbox caption row is hidden.
+- Estimate form:
+  - an empty submit flags exactly name, phone, zip and service, and focuses name;
+  - an invalid email is flagged;
+  - with email left empty, the submit passes validation and shows the "not connected" notice;
+  - the submitted data includes `customer_type` "Real estate investor", `budget` "$10k–$25k" and the selected service.
+- Screenshots reviewed: hero, Why Us, Tips and Estimate on desktop and 390px mobile.
+- Not checked in this release: Lighthouse, real phones, browsers other than Edge, contrast of the new tag label (slate-300 text on navy, the same pairing used elsewhere).
+
+### Known issues
+- Carried over from 0.2.0: the focus outline briefly fades in from the text color (~150ms); unused logo variants are copied into `dist/_astro/`.
+- On desktop, the hero "Placeholder" badge sits close to the right edge of the trust strip. It goes away once the real hero photo replaces the placeholder.
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-14. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.2.2`.
 
 ## [0.2.2] - 2026-10-08
 
@@ -232,6 +332,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.3.0]: https://github.com/roeigam/turnkey-reno/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/roeigam/turnkey-reno/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/roeigam/turnkey-reno/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/roeigam/turnkey-reno/compare/v0.1.0...v0.2.0
