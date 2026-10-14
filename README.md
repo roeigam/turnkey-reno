@@ -121,7 +121,7 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
 - [ ] Real project photos and hero photo in `src/assets/`, with real captions in `projects[]` (format: "Kitchen Remodel · North Canton, OH")
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
-- [ ] Confirm "Licensed, insured & guaranteed" (Why Us, advantage 8) is true before publishing
+- [ ] Re-enable credentials advantage once license + insurance are obtained (see site.ts)
 - [ ] Confirm the "within 24 hours" response promise (estimate section intro) is realistic
 - [ ] Consider a domain email (e.g. info@yourdomain.com) instead of the Gmail address
 - [ ] Test on a real phone: call button, menu, gallery, form

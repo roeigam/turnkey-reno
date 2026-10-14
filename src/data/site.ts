@@ -199,7 +199,10 @@ export const about = {
     "We're a Northeast Ohio home renovation company serving homeowners and real estate investors across Ohio's suburbs. We specialize in residential renovation and remodeling, with a strong focus on quality workmanship, honest pricing and reliable service.",
     "Every project starts with listening. We sit down with you, plan the renovation around your goals and your budget, and bring creative solutions that get you more for your money. Then we stay on the job until it's done right and you're completely satisfied.",
   ],
-  /** Advantages grid: 2 columns × 4 rows on desktop, 1 column on mobile. Titles render uppercase. */
+  /**
+   * Advantages grid: 2 columns × 4 rows on desktop, 1 column on mobile. Titles render uppercase.
+   * Items with `enabled: false` are kept here but never rendered. Keep exactly 8 enabled items.
+   */
   values: [
     { title: 'Creative, budget-based planning', text: 'We design the project with you, around the budget you set.' },
     { title: 'Transparent estimates', text: 'Detailed, honest pricing. No surprises halfway through.' },
@@ -208,9 +211,11 @@ export const about = {
     { title: 'Investor-smart renovations', text: 'Upgrades chosen for return, whether you plan to rent or sell.' },
     { title: 'On schedule', text: 'Realistic timelines, and we stick to them.' },
     { title: 'Clean, respectful job sites', text: 'We treat your home like our own and clean up every day.' },
-    // CONFIRM WITH CLIENT before launch: licensed + insured must be true.
-    { title: 'Licensed, insured & guaranteed', text: "We stand behind our work until you're satisfied." },
-  ],
+    { title: 'We stand behind our work', text: "We stay on the job until it's done right and you're satisfied." },
+    // Re-enable only once the client has an actual contractor license and insurance.
+    // To re-enable: set `enabled: true` here and disable "We stand behind our work" above (keeps 8 items).
+    { title: 'Licensed, insured & guaranteed', text: "We stand behind our work until you're satisfied.", enabled: false },
+  ] as { title: string; text: string; enabled?: boolean }[],
   ctaText: 'Talk to us about your project',
   /** Large faint outlined word behind the section (desktop only, decorative). Empty string hides it. */
   watermark: 'Built Right',
