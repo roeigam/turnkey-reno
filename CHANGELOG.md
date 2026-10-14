@@ -1,8 +1,61 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.3.0**
+**Current version: 0.3.1**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.3.1] - 2026-10-14
+
+| Field | Value |
+|---|---|
+| Release type | Patch |
+| Previous version | 0.3.0 |
+| Git commit | 94b681d |
+| Git tag | v0.3.1 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-14) |
+| Status | Pre-launch |
+
+### Summary
+The website no longer says the company is licensed, insured or guaranteed, because those credentials aren't in place yet. In "Why Us", that point is replaced with "We stand behind our work", so the section still shows eight advantages. The original wording is saved and can be switched back on once the license and insurance are obtained. The business email, turnkeyrenousa@gmail.com, was checked everywhere it appears.
+
+### Changed
+- Why Us (`site.ts` `about.values`, `About.astro`): advantage 8 "Licensed, insured & guaranteed" replaced on the page by "We stand behind our work: We stay on the job until it's done right and you're satisfied." The grid stays at 8 items (2 × 4 desktop, 1 column mobile).
+- `site.ts`: the original credentials entry is kept with `enabled: false` and the comment "Re-enable only once the client has an actual contractor license and insurance." `About.astro` filters out disabled advantages, so the text is not in the built HTML.
+- README "Before launch" checklist: "Confirm 'Licensed, insured & guaranteed'…" replaced by "Re-enable credentials advantage once license + insurance are obtained (see site.ts)".
+
+### Removed
+- All credential claims (licensed, insured, guaranteed) from the live page.
+
+### Content status
+- Removed until obtained: contractor license and insurance claims (stored, disabled, in `site.ts`).
+- Business email turnkeyrenousa@gmail.com confirmed by the client as official.
+- Still placeholder: 8 project photos (captions to come) and the hero background photo.
+- To confirm with client before launch: the 24-hour response promise.
+- Not yet set: production domain, privacy policy page, form service account.
+
+### Verification
+- Search for licensed, license, insured, insurance, certified, bonded, guaranteed and guarantee across the project (excluding `node_modules`, `dist`, and `package-lock.json`, whose `"license"` fields are open-source software licenses):
+  - matches only in `site.ts` (now the disabled entry and its comment), `README.md` (checklist line, replaced) and the 0.3.0 CHANGELOG entry (historical, kept);
+  - none in meta tags, JSON-LD, OG image text, alt texts or other components.
+- Built `dist/index.html`: no matches for those terms; the rendered page text also contains none (checked in the browser).
+- Email, from the single `company.email` value:
+  - estimate section and footer each show `turnkeyrenousa@gmail.com` with `href="mailto:turnkeyrenousa@gmail.com"`, and computed `text-transform` is `none` (displays lowercase);
+  - JSON-LD has `"email":"turnkeyrenousa@gmail.com"`;
+  - no inconsistencies found, so no fixes were needed.
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- Browser checks (Playwright driving Microsoft Edge):
+  - Why Us: 8 items in 2 columns × 4 rows at 1440×900, and 1 column × 8 rows at 390×844;
+  - item 8 reads "We stand behind our work";
+  - horizontal overflow 0px; no console errors.
+- Not checked in this release: Lighthouse, real phones, browsers other than Edge.
+
+### Known issues
+- Carried over from 0.2.0: the focus outline briefly fades in from the text color (~150ms); unused logo variants are copied into `dist/_astro/`.
+- Carried over from 0.3.0: on desktop, the hero "Placeholder" badge sits close to the right edge of the trust strip until the real hero photo is in.
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-14. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.3.0`.
 
 ## [0.3.0] - 2026-10-14
 
@@ -332,6 +385,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.3.1]: https://github.com/roeigam/turnkey-reno/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/roeigam/turnkey-reno/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/roeigam/turnkey-reno/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/roeigam/turnkey-reno/compare/v0.2.0...v0.2.1
