@@ -179,7 +179,8 @@ export const services: Service[] = [
     title: 'Basement Finishing',
     description: 'Turn an unused basement into a family room, home office, guest suite or extra rental space, finished right and built to stay dry.',
     icon: 'stairs',
-    image: { src: 'projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' },
+    // File is in src/assets/_disabled/ (not shipped); move it out before enabling service images.
+    image: { src: '_disabled/projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' },
   },
   {
     id: 'flooring',
@@ -303,14 +304,15 @@ export const projects: Project[] = [
   },
   {
     // Images look computer-generated; re-enable only if the client confirms these are photos of his own job.
+    // Its files live in src/assets/_disabled/ (excluded from the build): move them to src/assets/projects/ when enabling.
     id: 'basement-foundation',
     title: 'Basement Foundation Repair',
     workType: 'Basement',
     city: '', // client to confirm city
     matchedPair: false,
     enabled: false,
-    before: [{ src: 'projects/basement-foundation/before-1.jpg', alt: 'Basement block wall with peeling paint and water stains' }],
-    after: [{ src: 'projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' }],
+    before: [{ src: '_disabled/projects/basement-foundation/before-1.jpg', alt: 'Basement block wall with peeling paint and water stains' }],
+    after: [{ src: '_disabled/projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' }],
   },
   {
     id: 'concrete-walkway',

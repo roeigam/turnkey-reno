@@ -44,10 +44,10 @@ Images live in **`src/assets/`** and are referenced from `site.ts` by path relat
   - `before[]` and `after[]` images, each with alt text;
   - `matchedPair: true` when before and after are shot from the same angle, which gives an interactive comparison slider. Otherwise the card shows before | after side by side;
   - `featured: true` for the large card (one project);
-  - `enabled: false` to keep a project in the data without showing it.
+  - `enabled: false` to keep a project in the data without showing it. Put its images in `src/assets/_disabled/`, which is excluded from the build. Every image in the regular asset folders is bundled into `dist/` even when unused, so this keeps disabled content from shipping. To enable it, move the files back under `src/assets/projects/` and update the paths. The build stops with a clear message if an enabled item still points into `_disabled/`.
 
   The lightbox shows all of a project's photos, befores first, each labelled Before/After.
-- **Project photo sources:** the client's social-media composites and reels live in `src/assets/projects/source/` and are **never shipped**, because they're excluded from the image glob. `node scripts/extract-project-photos.mjs` crops the clean photos out of them. It only crops (no resizing or edits), every crop box is documented in the script, and it pulls the roof frames from the reel with `ffmpeg-static`.
+- **Project photo sources:** the client's social-media composites and reels live in `src/assets/projects/source/` and are **never shipped**, because they're excluded from the image glob. The videos (`*.mp4`) are also kept out of git because of their size. `node scripts/extract-project-photos.mjs` crops the clean photos out of the composites. It only crops (no resizing or edits), every crop box is documented in the script, and it pulls the roof frames from the reel with `ffmpeg-static`, which needs the video present locally.
 - **Service card photos:** each service can have an optional `image`. These only render when `settings.showServiceImages` is `true`. Turn it on once every service card has a photo, so the grid stays consistent.
 - **Hero background:** replace `hero.image.src` with a wide photo (≥ 2400px). The dark overlay keeps text readable.
 
@@ -105,6 +105,8 @@ The output is plain static files in `dist/`.
 
 - **Netlify:** connect the repo. `netlify.toml` already sets `npm run build` and `dist`.
 - **Cloudflare Pages:** framework preset "Astro", build command `npm run build`, output directory `dist`, and set environment variable `NODE_VERSION=22`.
+
+**About `ffmpeg-static`:** this package is used only by `scripts/extract-project-photos.mjs`, never by the site build. Its install script downloads an ~80 MB ffmpeg binary from GitHub. It's listed under `optionalDependencies`, so if that download fails or is blocked (on Netlify, Cloudflare or locally), `npm install` still succeeds and the package is simply skipped; the build doesn't need it. Locally, if the crop script reports ffmpeg as missing, run `npm install ffmpeg-static`. If npm asks you to approve install scripts, run `npm approve-scripts ffmpeg-static`.
 
 ## Search engines (noindex)
 
