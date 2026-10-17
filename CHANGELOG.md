@@ -1,8 +1,99 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.3.1**
+**Current version: 0.4.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.4.0] - 2026-10-17
+
+| Field | Value |
+|---|---|
+| Release type | Minor |
+| Previous version | 0.3.1 |
+| Git commit | e8ff551 |
+| Git tag | v0.4.0 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-17) |
+| Status | Pre-launch |
+
+### Summary
+The Projects section now shows real before-and-after photos of Turnkey Reno's work instead of grey placeholders: an attic bedroom makeover, a roof replacement and a concrete walkway. On the attic project, visitors can drag a slider across the photo to compare the room before and after. Clicking a project opens all of its photos, each clearly marked "Before" or "After". The photos were cleanly cropped out of the social-media graphics, so no logos, frames or slogans appear on the site.
+
+### Added
+- `scripts/extract-project-photos.mjs`: re-runnable crop script. It only crops (no resizing, sharpening or edits; JPEG quality 95, 4:4:4), every crop box is documented, and it extracts roof frames from the reel with `ffmpeg-static`.
+- Clean project photos in `src/assets/projects/<id>/`:
+  - attic bedroom: 2 photos (756×596 each);
+  - roof replacement: 5 frames (1080×1680 each);
+  - concrete walkway: 2 photos (629×806 and 674×806);
+  - basement foundation: 2 photos (684×556 and 696×600), stored but not shown.
+- `BeforeAfterSlider.astro`: before/after comparison for same-angle photos.
+  - Native range input for keyboard use (arrow keys, Home/End), with `aria-valuetext`.
+  - Pointer handling for mouse, pen and touch; `touch-action: pan-y` keeps page scrolling on phones.
+  - Gold handle with a focus ring when focused by keyboard; HTML "Before"/"After" labels.
+  - No animation; the knob's hover scale is off under reduced motion.
+- Projects data model in `site.ts`:
+  - fields `id`, `title`, `workType`, `city`, `before[]`, `after[]` (with alt text), `matchedPair`, `featured`, `enabled`;
+  - `projectCaption()` gives "Work type · City, OH", or just the work type while `city` is empty.
+- Lightbox per project: befores then afters, each with a Before/After label chip, the project title, the caption and an "n / N" counter.
+- Optional `image` on services, rendered only when the new `settings.showServiceImages` is `true` (default `false`, with the comment "Enable once every service card has a photo, so the grid stays consistent"). Basement Finishing has its image set.
+- `ffmpeg-static` devDependency (used only by the crop script).
+
+### Changed
+- Projects (`Projects.astro`) rebuilt around real projects:
+  - Attic Bedroom Makeover: the featured card, with the slider.
+  - Roof Replacement and Concrete Walkway: side-by-side before | after cards.
+  - Desktop: featured card on the left (7/12) with the other two stacked on the right. Mobile: one column.
+  - Each card has a navy caption bar with a gold rule, the work type, the title and a "Photos (N)" button.
+- `src/lib/images.ts`: `src/assets/projects/source/**` excluded from the image glob, like the logo originals.
+- `scripts/generate-placeholders.mjs`: now generates only the hero placeholder.
+- README: projects format, photo sources and extraction script, service photos flag, and an updated launch checklist (project cities, hero photo, basement confirmation).
+- `.gitignore`: client source videos (`src/assets/projects/source/*.mp4`) kept out of git (44 MB + 4 MB).
+
+### Removed
+- The 8 placeholder project images (`project-1.svg` to `project-8.svg`), the old single-image `Project` fields (`image`, `caption`, `placeholder`), and the placeholder generator's project block.
+
+### Content status
+- New in this release: 3 real projects (attic bedroom, roof replacement, concrete walkway).
+- Client to confirm: the city for each project (empty, so captions show only the work type).
+- Held back:
+  - Basement foundation project (`enabled: false`): its images look computer-generated, so it's shown only if the client confirms they are photos of his own job;
+  - its "after" image on the Basement Finishing card stays hidden while `settings.showServiceImages` is off.
+- Not used this round: both videos (the roof reel was used only as a frame source); `attic-bedroom-square.jpeg` (smaller panels, about 533×488, than the wide version); `roof-strip.jpeg` (the video frames are sharper).
+- Still placeholder: hero background photo (none of the new photos is large enough for full width).
+- Services list unchanged (roofing and concrete not added, pending client confirmation).
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- `dist/`: no files from `src/assets/projects/source/` (no composites, strip or videos) and no `project-N` SVGs.
+- Crops:
+  - each reviewed visually at full size: no logos, gold frames, BEFORE/AFTER tags or text bars ("WARRANTY", "Expert Foundation Solutions", "Quality Work", "Fair Pricing", "Dry / Clean / Protected");
+  - edge rows and columns scanned for leftover gold frame pixels. This caught a 1–2px sliver of the AFTER tag's gold line at the bottom of the basement "after" crop, which was trimmed (height 609 → 600) and re-checked;
+  - the gold-colored pixels flagged at the top of that crop are the wooden ceiling joists.
+- Roof frames:
+  - picked from a contact sheet of 42 frames (one per 0.5 s);
+  - for each, the sharpest of ±8 frames (Laplacian variance) was chosen: frames 88, 278, 292, 368 and 472;
+  - the logo badge and label overlays end at y≈225, and crops start at y240.
+- Browser checks (Playwright driving Microsoft Edge):
+  - Projects: 3 cards. Desktop boxes: featured 690×676, the other two 486×326 each with aligned bottoms. Mobile: one column, 350px wide.
+  - Slider keyboard: from 50, 5× ArrowRight gives 55, Home gives 0, End gives 100, ArrowLeft gives 99; `--pos`, the clip-path (`inset(0px 1% 0px 0px)` at 99) and `aria-valuetext` follow; the knob ring shows on keyboard focus.
+  - Slider mouse: drag to 25% gives 25, drag to 70% then release gives 70, moving after release changes nothing.
+  - Slider touch (390×844 emulation): tap at 80% gives 80, touch drag 80% → 20% gives 20.
+  - Reduced motion: knob `transition-duration` is 0s (0.15s otherwise).
+  - Lightbox (roof): opens at "1 / 5 Before"; ArrowRight goes 2 Before, 3 Before, 4 After, 5 After, then wraps to 1; Esc closes and focus returns to the opener. Attic opens at "1 / 2 Before".
+  - Basement: not in the page text, no basement image rendered, absent from the lightbox data.
+  - Service images: 0 rendered with the flag off; with the flag temporarily on, 1 image on the Basement Finishing card with the correct alt text, then the flag was set back to off.
+  - Horizontal overflow 0px on desktop and mobile; no console errors.
+- Screenshots reviewed: Projects at 1440px and 390px; lightbox open on the roof project at both sizes.
+- Not checked in this release: Lighthouse, real phones, browsers other than Edge, and screen-reader output for the slider (checked via ARIA attributes only).
+
+### Known issues
+- The disabled basement crops are emitted into `dist/_astro/` as unreferenced files (`before-1.*.jpg` 684×556, `after-1.*.jpg` 696×600). The page never links them, but they'd be reachable by URL. This is the same build behavior as the unused logo variants (all images in `src/assets/` are bundled).
+- Source photo quality: the concrete and attic photos are small (about 630–760px wide) and show social-media compression, which is fine at card size but soft when enlarged in the lightbox.
+- The attic before/after photos are from nearly, but not exactly, the same spot, so the slider comparison isn't pixel-aligned.
+- Carried over: focus outline fades in from the text color (~150ms); hero "Placeholder" badge sits close to the trust strip on desktop.
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-17. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.3.1`.
 
 ## [0.3.1] - 2026-10-14
 
@@ -385,6 +476,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.4.0]: https://github.com/roeigam/turnkey-reno/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/roeigam/turnkey-reno/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/roeigam/turnkey-reno/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/roeigam/turnkey-reno/compare/v0.2.1...v0.2.2
