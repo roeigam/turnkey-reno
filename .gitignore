@@ -35,3 +35,6 @@ Thumbs.db
 # deploy tooling
 .netlify/
 .wrangler/
+
+# Client source videos (large; kept locally, not in git)
+src/assets/projects/source/*.mp4

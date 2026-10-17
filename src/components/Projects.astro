@@ -1,28 +1,50 @@
 ---
+import type { ImageMetadata } from 'astro';
 import { Image, getImage } from 'astro:assets';
-import { projects, projectsIntro } from '../data/site';
-import { asset, isSvg } from '../lib/images';
+import { projectCaption, projects, projectsIntro, type ProjectImage } from '../data/site';
+import { asset } from '../lib/images';
+import BeforeAfterSlider from './BeforeAfterSlider.astro';
 import Icon from './Icon.astro';
 import SectionHeading from './SectionHeading.astro';
 
-// Bento rhythm, repeating every 8 items: one feature tile (2×2), one wide tile (2×1), the rest 1×1.
-const layout = (i: number) => {
-  const slot = i % 8;
-  if (slot === 0) return 'col-span-2 row-span-2';
-  if (slot === 5) return 'col-span-2';
-  return '';
+const enabled = projects.filter((p) => p.enabled !== false);
+const featured = enabled.find((p) => p.featured) ?? enabled[0];
+const ordered = featured ? [featured, ...enabled.filter((p) => p !== featured)] : [];
+
+interface Shot {
+  meta: ImageMetadata;
+  alt: string;
+  full: string;
+}
+const load = async (img: ProjectImage): Promise<Shot> => {
+  const meta = asset(img.src);
+  // Lightbox version: up to 2000px wide, never upscaled (raster → WebP).
+  const full = await getImage({ src: meta, width: Math.min(meta.width, 2000) });
+  return { meta, alt: img.alt, full: full.src };
 };
 
-const items = await Promise.all(
-  projects.map(async (project) => {
-    const src = asset(project.image);
-    // Large version for the lightbox (raster → WebP, max 2000px wide; SVG passes through).
-    const full = await getImage({ src, width: Math.min(src.width, 2000) });
-    // Caption format: 'Kitchen Remodel · North Canton, OH' → work type + location.
-    const [work = '', place = ''] = project.caption.split(/\s*·\s*/);
-    return { ...project, src, full: full.src, work, place };
-  }),
+const cards = await Promise.all(
+  ordered.map(async (p) => ({
+    project: p,
+    caption: projectCaption(p),
+    before: await Promise.all(p.before.map(load)),
+    after: await Promise.all(p.after.map(load)),
+  })),
 );
+
+// Lightbox data: per project, befores then afters, each labelled.
+const slides = cards.map((c) => ({
+  title: c.project.title,
+  caption: c.caption,
+  items: [
+    ...c.before.map((s) => ({ src: s.full, alt: s.alt, label: 'Before' })),
+    ...c.after.map((s) => ({ src: s.full, alt: s.alt, label: 'After' })),
+  ],
+}));
+
+const rows = Math.max(cards.length - 1, 1); // the featured card spans all rows of the right column
+const widths = (m: ImageMetadata) => [400, 640, 960].filter((w) => w <= m.width).concat(m.width < 400 ? [m.width] : []);
+const chip = 'pointer-events-none absolute top-3 z-10 rounded-[2px] px-2.5 py-1 font-display text-xs font-semibold tracking-[0.16em] uppercase';
 ---
 
 <section id="projects" aria-labelledby="projects-heading" class="bg-white py-24 sm:py-28 lg:py-36">
@@ -36,52 +58,86 @@ const items = await Promise.all(
     </div>
 
     <ul
-      class="mt-12 grid grid-flow-dense auto-rows-[42vw] grid-cols-2 gap-2.5 sm:auto-rows-[15rem] sm:gap-4 lg:mt-16 lg:auto-rows-[15.5rem] lg:grid-cols-4 xl:auto-rows-[17rem]"
+      class="mt-12 grid gap-5 sm:gap-6 lg:mt-16 lg:grid-cols-12 lg:grid-rows-[repeat(var(--rows),minmax(0,1fr))]"
+      style={`--rows: ${rows}`}
       role="list"
-      data-gallery
     >
       {
-        items.map((item, i) => (
-          <li class:list={[layout(i)]} data-reveal style={`--reveal-delay: ${(i % 4) * 70}ms`}>
-            <button
-              type="button"
-              class="group relative block size-full overflow-hidden rounded-[4px] bg-navy-900 text-left focus-visible:outline-offset-4"
-              data-index={i}
-              data-full={item.full}
-              data-alt={item.alt}
-              data-caption={item.caption}
-              aria-label={`View larger: ${item.caption || item.alt}`}
-              aria-haspopup="dialog"
+        cards.map((c, i) => {
+          const isFeatured = i === 0;
+          const total = c.before.length + c.after.length;
+          const openLabel = `View all ${total} photos: ${c.project.title}`;
+          return (
+            <li
+              class:list={['flex', isFeatured ? 'lg:col-span-7 lg:row-[span_var(--rows)/span_var(--rows)]' : 'lg:col-span-5']}
+              data-reveal
+              style={`--reveal-delay: ${i * 80}ms`}
             >
-              <Image
-                src={item.src}
-                alt={item.alt}
-                {...(isSvg(item.src)
-                  ? {}
-                  : {
-                      widths: [480, 800, 1200, 1600].filter((w) => w <= item.src.width),
-                      sizes: layout(i).includes('col-span-2') ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, 50vw',
-                    })}
-                class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-              />
-              {
-                item.caption && (
-                  <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 via-navy-950/55 to-transparent px-3.5 pt-12 pb-3 sm:px-5 sm:pb-4">
-                    <span class="block h-0.5 w-6 bg-accent" />
-                    <span class="mt-2 block font-display text-sm leading-tight font-bold tracking-wider text-white uppercase sm:text-lg">{item.work}</span>
-                    {item.place && <span class="mt-0.5 block text-xs text-slate-300 sm:text-sm">{item.place}</span>}
-                  </span>
-                )
-              }
-              <span class="absolute top-3 right-3 hidden size-10 place-items-center rounded-full bg-accent text-navy-950 opacity-0 shadow-lg transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 sm:grid">
-                <Icon name="expand" class="size-[18px]" strokeWidth={2} />
-              </span>
-            </button>
-          </li>
-        ))
+              <article class="flex w-full flex-col overflow-hidden rounded-[4px] bg-navy-950 shadow-[0_24px_50px_-28px_rgb(7_14_26/0.55)] ring-1 ring-navy-900/10">
+                {c.project.matchedPair ? (
+                  <BeforeAfterSlider
+                    before={c.before[0]}
+                    after={c.after[0]}
+                    label={c.project.title}
+                    sizes={isFeatured ? '(min-width: 1280px) 46rem, (min-width: 1024px) 58vw, 100vw' : '(min-width: 1024px) 40vw, 100vw'}
+                    class:list={['aspect-[5/4] w-full', isFeatured ? 'lg:aspect-auto lg:min-h-[36rem] lg:flex-1' : 'lg:aspect-auto lg:min-h-[15rem] lg:flex-1']}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    class:list={[
+                      'group relative grid w-full grid-cols-2 gap-0.5 bg-navy-950 text-left',
+                      isFeatured ? 'aspect-[5/4] lg:aspect-auto lg:min-h-[36rem] lg:flex-1' : 'aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[15rem] lg:flex-1',
+                    ]}
+                    data-open-project={i}
+                    aria-label={openLabel}
+                    aria-haspopup="dialog"
+                  >
+                    {[c.before[0], c.after[0]].map((shot, k) => (
+                      <span class="relative overflow-hidden">
+                        <Image
+                          src={shot.meta}
+                          alt={shot.alt}
+                          widths={widths(shot.meta)}
+                          sizes={isFeatured ? '(min-width: 1024px) 29vw, 50vw' : '(min-width: 1024px) 20vw, 50vw'}
+                          class="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                        />
+                        <span class:list={[chip, k === 0 ? 'left-3 bg-navy-950/85 text-white' : 'right-3 bg-accent text-navy-950']}>
+                          {k === 0 ? 'Before' : 'After'}
+                        </span>
+                      </span>
+                    ))}
+                    <span class="pointer-events-none absolute bottom-3 left-1/2 grid size-10 -translate-x-1/2 place-items-center rounded-full bg-accent text-navy-950 opacity-0 shadow-lg transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <Icon name="expand" class="size-[18px]" strokeWidth={2} />
+                    </span>
+                  </button>
+                )}
+
+                <div class="flex items-center justify-between gap-4 border-t-2 border-accent px-5 py-4 text-white sm:px-6">
+                  <div class="min-w-0">
+                    <p class="font-display text-xs font-semibold tracking-[0.2em] text-accent uppercase sm:text-sm">{c.caption}</p>
+                    <h3 class="mt-0.5 font-display text-xl leading-tight font-bold tracking-wide uppercase sm:text-2xl">{c.project.title}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[3px] px-3 font-display text-sm font-semibold tracking-[0.12em] text-white uppercase ring-1 ring-white/25 transition ring-inset hover:bg-white/10 hover:ring-white/60"
+                    data-open-project={i}
+                    aria-label={openLabel}
+                    aria-haspopup="dialog"
+                  >
+                    <Icon name="expand" class="size-4 text-accent" strokeWidth={2} />
+                    Photos ({total})
+                  </button>
+                </div>
+              </article>
+            </li>
+          );
+        })
       }
     </ul>
   </div>
+
+  <script type="application/json" id="project-slides" set:html={JSON.stringify(slides)} />
 
   <!-- Lightbox -->
   <dialog
@@ -94,21 +150,19 @@ const items = await Promise.all(
         <p class="font-display text-sm font-semibold tracking-[0.2em] text-slate-400 uppercase tabular-nums" aria-live="polite">
           <span data-lb-counter></span>
         </p>
-        <button
-          type="button"
-          class="grid size-12 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"
-          data-lb-close
-          aria-label="Close"
-        >
+        <button type="button" class="grid size-12 place-items-center rounded-full bg-white/10 transition hover:bg-white/20" data-lb-close aria-label="Close">
           <Icon name="close" class="size-6" />
         </button>
       </div>
 
       <figure class="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 sm:px-20">
-        <img data-lb-img src="" alt="" class="max-h-full min-h-0 w-auto max-w-full rounded-[3px] object-contain shadow-2xl transition-opacity duration-300" />
-        <figcaption data-lb-figcaption class="mt-4 mb-2 flex items-center gap-3 font-display text-lg font-bold tracking-wider uppercase sm:text-xl">
-          <span class="h-0.5 w-6 bg-accent"></span>
-          <span data-lb-caption></span>
+        <div class="relative flex min-h-0 max-w-full flex-1 items-center justify-center">
+          <img data-lb-img src="" alt="" class="max-h-full min-h-0 w-auto max-w-full rounded-[3px] object-contain shadow-2xl" />
+        </div>
+        <figcaption class="mt-4 mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center">
+          <span data-lb-label class="rounded-[2px] px-2.5 py-1 font-display text-sm font-semibold tracking-[0.16em] uppercase"></span>
+          <span class="font-display text-lg font-bold tracking-wider uppercase sm:text-xl" data-lb-title></span>
+          <span class="text-sm text-slate-400" data-lb-caption></span>
         </figcaption>
 
         <button
@@ -143,34 +197,52 @@ const items = await Promise.all(
 </section>
 
 <script>
+  interface Slide {
+    src: string;
+    alt: string;
+    label: 'Before' | 'After';
+  }
+  interface ProjectSlides {
+    title: string;
+    caption: string;
+    items: Slide[];
+  }
+
+  const data: ProjectSlides[] = JSON.parse(document.getElementById('project-slides')!.textContent || '[]');
   const dialog = document.getElementById('lightbox') as HTMLDialogElement;
-  const thumbs = [...document.querySelectorAll<HTMLButtonElement>('[data-gallery] button[data-full]')];
   const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+  const label = dialog.querySelector<HTMLElement>('[data-lb-label]')!;
+  const title = dialog.querySelector<HTMLElement>('[data-lb-title]')!;
   const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
-  const figcaption = dialog.querySelector<HTMLElement>('[data-lb-figcaption]')!;
   const counter = dialog.querySelector<HTMLElement>('[data-lb-counter]')!;
+  let project = 0;
   let index = 0;
   let opener: HTMLElement | null = null;
 
   const show = (i: number) => {
-    index = (i + thumbs.length) % thumbs.length;
-    const t = thumbs[index].dataset;
-    img.src = t.full!;
-    img.alt = t.alt ?? '';
-    caption.textContent = t.caption ?? '';
-    figcaption.hidden = !t.caption; // no empty caption row for photos without a caption
-    counter.textContent = `${index + 1} / ${thumbs.length}`;
+    const items = data[project].items;
+    index = (i + items.length) % items.length;
+    const s = items[index];
+    img.src = s.src;
+    img.alt = s.alt;
+    label.textContent = s.label;
+    label.className =
+      'rounded-[2px] px-2.5 py-1 font-display text-sm font-semibold tracking-[0.16em] uppercase ' +
+      (s.label === 'After' ? 'bg-accent text-navy-950' : 'bg-white/15 text-white');
+    title.textContent = data[project].title;
+    caption.textContent = data[project].caption;
+    counter.textContent = `${index + 1} / ${items.length}`;
     // Warm the cache for neighbours.
     [index - 1, index + 1].forEach((n) => {
-      const src = thumbs[(n + thumbs.length) % thumbs.length].dataset.full;
-      if (src) new Image().src = src;
+      new Image().src = items[(n + items.length) % items.length].src;
     });
   };
 
-  thumbs.forEach((btn, i) =>
+  document.querySelectorAll<HTMLButtonElement>('[data-open-project]').forEach((btn) =>
     btn.addEventListener('click', () => {
       opener = btn;
-      show(i);
+      project = Number(btn.dataset.openProject);
+      show(0);
       dialog.showModal();
       document.documentElement.style.overflow = 'hidden';
     }),

@@ -20,6 +20,8 @@
 export const settings = {
   /** Show "Placeholder" badges on unfinished content (useful on preview deploys). */
   showPlaceholderBadges: true,
+  /** Enable once every service card has a photo, so the grid stays consistent. */
+  showServiceImages: false,
   /**
    * Keep search engines out until launch: adds <meta name="robots" content="noindex">
    * and a disallow-all robots.txt. Set to false at launch (together with siteUrl).
@@ -148,6 +150,8 @@ export interface Service {
   title: string;
   description: string;
   icon: IconName;
+  /** Optional photo at the top of the card (shown only when settings.showServiceImages is true). */
+  image?: { src: string; alt: string };
   placeholder?: boolean;
 }
 
@@ -175,6 +179,7 @@ export const services: Service[] = [
     title: 'Basement Finishing',
     description: 'Turn an unused basement into a family room, home office, guest suite or extra rental space, finished right and built to stay dry.',
     icon: 'stairs',
+    image: { src: 'projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' },
   },
   {
     id: 'flooring',
@@ -229,30 +234,97 @@ export const projectsIntro = {
   text: 'Real projects, real results. Click or tap any photo to see the full transformation.',
 };
 
-export interface Project {
+export interface ProjectImage {
   /** Path relative to src/assets/ (jpg, png, webp, avif or svg). */
-  image: string;
-  /** Describes the photo for screen readers and search engines. */
+  src: string;
+  /** Describes what the photo shows, for screen readers and search engines. */
   alt: string;
-  /**
-   * Short caption shown on the thumbnail and in the lightbox:
-   * work type + city, e.g. 'Kitchen Remodel · North Canton, OH'.
-   * Leave empty ('') until the real photo arrives; nothing is shown when empty.
-   */
-  caption: string;
-  placeholder?: boolean;
 }
 
-// Placeholder images: captions stay empty until real photos (with real locations) arrive.
+export interface Project {
+  id: string;
+  title: string;
+  workType: string;
+  /** City without the state, e.g. 'North Canton'. Caption: "Work type · City, OH"; empty = work type only. */
+  city: string;
+  before: ProjectImage[];
+  after: ProjectImage[];
+  /** true = before and after are taken from the same angle → interactive comparison slider. */
+  matchedPair: boolean;
+  /** The featured project gets the large card (first enabled featured project). */
+  featured?: boolean;
+  /** false = kept in data but never rendered. */
+  enabled?: boolean;
+}
+
+/** Caption text: "Work type · City, OH", or just the work type until the city is known. */
+export const projectCaption = (p: Project) => (p.city ? `${p.workType} · ${p.city}, OH` : p.workType);
+
+/*
+ * Photos are cropped from the client's composites and the roof reel by
+ * scripts/extract-project-photos.mjs (sources in src/assets/projects/source/, never shipped).
+ */
 export const projects: Project[] = [
-  { image: 'projects/project-1.svg', alt: 'Placeholder project photo 1', caption: '', placeholder: true },
-  { image: 'projects/project-2.svg', alt: 'Placeholder project photo 2', caption: '', placeholder: true },
-  { image: 'projects/project-3.svg', alt: 'Placeholder project photo 3', caption: '', placeholder: true },
-  { image: 'projects/project-4.svg', alt: 'Placeholder project photo 4', caption: '', placeholder: true },
-  { image: 'projects/project-5.svg', alt: 'Placeholder project photo 5', caption: '', placeholder: true },
-  { image: 'projects/project-6.svg', alt: 'Placeholder project photo 6', caption: '', placeholder: true },
-  { image: 'projects/project-7.svg', alt: 'Placeholder project photo 7', caption: '', placeholder: true },
-  { image: 'projects/project-8.svg', alt: 'Placeholder project photo 8', caption: '', placeholder: true },
+  {
+    id: 'attic-bedroom',
+    title: 'Attic Bedroom Makeover',
+    workType: 'Bedroom Remodel',
+    city: '', // client to confirm city
+    matchedPair: true,
+    featured: true,
+    before: [
+      {
+        src: 'projects/attic-bedroom/before-1.jpg',
+        alt: 'Attic bedroom before the remodel: textured sloped ceiling, dated wood paneling, worn wood floor and old furniture',
+      },
+    ],
+    after: [
+      {
+        src: 'projects/attic-bedroom/after-1.jpg',
+        alt: 'Attic bedroom after the remodel: smooth white sloped ceiling, gray painted paneling, new plank flooring and a window at the far end',
+      },
+    ],
+  },
+  {
+    id: 'roof-replacement',
+    title: 'Roof Replacement',
+    workType: 'Roofing',
+    city: '', // client to confirm city
+    matchedPair: false,
+    before: [
+      { src: 'projects/roof-replacement/before-1.jpg', alt: 'Old roof before replacement: worn gray shingles and a weathered ridge cap with moss along its edge' },
+      { src: 'projects/roof-replacement/before-2.jpg', alt: 'Old roof before replacement: deteriorated shingles along the edge next to the gutter' },
+      { src: 'projects/roof-replacement/before-3.jpg', alt: 'Old roof before replacement: a broken, crumbling shingle with a gap, a hand pointing to the damage' },
+    ],
+    after: [
+      { src: 'projects/roof-replacement/after-1.jpg', alt: 'New roof after replacement: rows of new architectural shingles under a blue sky' },
+      { src: 'projects/roof-replacement/after-2.jpg', alt: 'New roof after replacement: new shingles with neighboring houses in the background' },
+    ],
+  },
+  {
+    // Images look computer-generated; re-enable only if the client confirms these are photos of his own job.
+    id: 'basement-foundation',
+    title: 'Basement Foundation Repair',
+    workType: 'Basement',
+    city: '', // client to confirm city
+    matchedPair: false,
+    enabled: false,
+    before: [{ src: 'projects/basement-foundation/before-1.jpg', alt: 'Basement block wall with peeling paint and water stains' }],
+    after: [{ src: 'projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' }],
+  },
+  {
+    id: 'concrete-walkway',
+    title: 'Concrete Walkway',
+    workType: 'Concrete',
+    city: '', // client to confirm city
+    matchedPair: false,
+    before: [
+      { src: 'projects/concrete-walkway/before-1.jpg', alt: 'Side of the house before the walkway: grass, gravel and a downspout along the brick foundation' },
+    ],
+    after: [
+      { src: 'projects/concrete-walkway/after-1.jpg', alt: 'Side of the house after the work: a freshly poured concrete walkway along the foundation, still in its wooden forms' },
+    ],
+  },
 ];
 
 /* ── Tips corner ──────────────────────────────────────────────────────────── */

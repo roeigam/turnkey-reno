@@ -10,6 +10,8 @@ const modules = import.meta.glob<{ default: ImageMetadata }>(
     '/src/assets/**/*.{jpg,jpeg,png,webp,avif,gif,svg,JPG,JPEG,PNG,WEBP,AVIF}',
     // Client's original logo files are reference material only; keep them out of the build.
     '!/src/assets/brand/*-original*',
+    // Client's social-media composites and reels: crop sources only (see scripts/extract-project-photos.mjs).
+    '!/src/assets/projects/source/**',
   ],
   { eager: true },
 );

@@ -1,7 +1,6 @@
 /**
- * Generates placeholder images:
+ * Generates the placeholder hero image (project photos are real now: see extract-project-photos.mjs):
  *   src/assets/hero/hero.svg          hero background (blueprint-style house elevation)
- *   src/assets/projects/project-N.svg gallery placeholders
  *   (the OG image and favicons are built by scripts/build-logo.mjs)
  *
  * Run: node scripts/generate-placeholders.mjs
@@ -69,40 +68,3 @@ const hero = `<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1400"
 `;
 write('src/assets/hero/hero.svg', hero);
 
-/* ── Project placeholders ─────────────────────────────────────────────────── */
-const projects = [
-  ['Kitchen Remodel', '#14243b', '#1f3a5c'],
-  ['Bathroom Renovation', '#1c2129', '#2e3642'],
-  ['Basement Finishing', '#2a241c', '#46392a'],
-  ['Flooring Installation', '#162a2e', '#24454a'],
-  ['Interior Remodel', '#1b1f2e', '#2f3550'],
-  ['Open Living Space', '#26221f', '#3f3832'],
-  ['Walk-in Shower', '#12202c', '#21384d'],
-  ['Drywall & Framing', '#22262c', '#3a4049'],
-];
-
-projects.forEach(([label, from, to], i) => {
-  const n = i + 1;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
-  <!-- PLACEHOLDER project photo. Replace with a real photo and update projects[] in src/data/site.ts -->
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${to}"/><stop offset="1" stop-color="${from}"/>
-    </linearGradient>
-    ${grid('g', 40, 0.03)}
-  </defs>
-  <rect width="1600" height="1200" fill="url(#bg)"/>
-  <rect width="1600" height="1200" fill="url(#g)"/>
-  <g fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="3">
-    <rect x="460" y="330" width="680" height="480"/>
-    <path d="M0 0l460 330M1600 0l-460 330M0 1200l460-390M1600 1200l-460-390"/>
-    <path d="M300 1200l280-390M650 1200l140-390M950 1200l-140-390M1300 1200l-280-390"/>
-  </g>
-  <!-- ${label.replace(/&/g, 'and')} -->
-  <path d="M740 520h120" stroke="#dba84f" stroke-width="4"/>
-  <text x="800" y="590" text-anchor="middle" fill="#dba84f" font-family="${FONT}" font-size="40" font-weight="600" letter-spacing="8">PROJECT ${String(n).padStart(2, '0')}</text>
-  <text x="800" y="650" text-anchor="middle" fill="#fff" fill-opacity=".5" font-family="${FONT}" font-size="30" letter-spacing="5">PLACEHOLDER IMAGE</text>
-</svg>
-`;
-  write(`src/assets/projects/project-${n}.svg`, svg);
-});

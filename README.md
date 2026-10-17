@@ -26,7 +26,7 @@ Node 22.12+ is required.
 | Hero text and buttons     | `hero` (headline = `company.slogan`)      |
 | Services                  | `services` (icon names: see `IconName`)   |
 | About / Why choose us     | `about`                                   |
-| Gallery                   | `projects`                                |
+| Projects (before/after)   | `projects`                                |
 | Tips                      | `tips`                                    |
 | Page title, description   | `seo`                                     |
 | Form backend              | `formConfig`                              |
@@ -38,11 +38,22 @@ Items marked `placeholder: true` display a small **Placeholder** badge while `se
 
 Images live in **`src/assets/`** and are referenced from `site.ts` by path relative to that folder. Astro resizes them and converts JPG/PNG to WebP at build time, with responsive `srcset`. SVGs are passed through unchanged.
 
-- **Project photos:** drop files into `src/assets/projects/` (e.g. `kitchen-1.jpg`), then update the `image` paths in `projects`. Any number of photos works; the grid repeats its layout pattern every 8 images. Aim for ≥ 1600px wide, landscape.
+- **Projects:** use one folder per project, `src/assets/projects/<id>/` (`before-1.jpg`, `after-1.jpg`, …). Each entry in `projects` (site.ts) has:
+  - `title` and `workType`;
+  - `city`: the caption shows "Work type · City, OH", or just the work type while `city` is empty;
+  - `before[]` and `after[]` images, each with alt text;
+  - `matchedPair: true` when before and after are shot from the same angle, which gives an interactive comparison slider. Otherwise the card shows before | after side by side;
+  - `featured: true` for the large card (one project);
+  - `enabled: false` to keep a project in the data without showing it.
+
+  The lightbox shows all of a project's photos, befores first, each labelled Before/After.
+- **Project photo sources:** the client's social-media composites and reels live in `src/assets/projects/source/` and are **never shipped**, because they're excluded from the image glob. `node scripts/extract-project-photos.mjs` crops the clean photos out of them. It only crops (no resizing or edits), every crop box is documented in the script, and it pulls the roof frames from the reel with `ffmpeg-static`.
+- **Service card photos:** each service can have an optional `image`. These only render when `settings.showServiceImages` is `true`. Turn it on once every service card has a photo, so the grid stays consistent.
 - **Hero background:** replace `hero.image.src` with a wide photo (≥ 2400px). The dark overlay keeps text readable.
+
 A missing image path fails the build with a message listing the available files.
 
-`scripts/generate-placeholders.mjs` regenerates the placeholder hero and project images (`node scripts/generate-placeholders.mjs`).
+`scripts/generate-placeholders.mjs` regenerates the placeholder hero image (`node scripts/generate-placeholders.mjs`).
 
 ## Logo
 
@@ -119,7 +130,9 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] Privacy policy page added and linked in the footer (needed once the form collects data)
 - [ ] Sitemap added (`npx astro add sitemap`), then uncomment the `Sitemap:` line in `src/pages/robots.txt.ts`
 - [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
-- [ ] Real project photos and hero photo in `src/assets/`, with real captions in `projects[]` (format: "Kitchen Remodel · North Canton, OH")
+- [ ] Confirm the city for each project (`city` in `projects`, currently empty), and add more projects as photos arrive
+- [ ] Real hero photo: the background is still the blueprint placeholder, and none of the project photos is large enough
+- [ ] Basement foundation project: show it only if the client confirms the photos are of his own job (`enabled: false` in `projects`)
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
 - [ ] Re-enable credentials advantage once license + insurance are obtained (see site.ts)
 - [ ] Confirm the "within 24 hours" response promise (estimate section intro) is realistic

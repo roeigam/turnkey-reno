@@ -1,8 +1,16 @@
 ---
-import { company, services, servicesIntro } from '../data/site';
+import { Image } from 'astro:assets';
+import { company, services, servicesIntro, settings } from '../data/site';
+import { asset } from '../lib/images';
 import Icon from './Icon.astro';
 import PlaceholderBadge from './PlaceholderBadge.astro';
 import SectionHeading from './SectionHeading.astro';
+
+// Card photos render only when settings.showServiceImages is on.
+const cards = services.map((service) => ({
+  ...service,
+  photo: settings.showServiceImages && service.image ? { meta: asset(service.image.src), alt: service.image.alt } : undefined,
+}));
 ---
 
 <section id="services" aria-labelledby="services-heading" class="relative bg-paper pt-20 pb-24 sm:pt-28 lg:pt-32 lg:pb-36">
@@ -28,10 +36,21 @@ import SectionHeading from './SectionHeading.astro';
     <!-- Service cards: two staggered columns on tablet/desktop -->
     <ul class="grid gap-5 sm:grid-cols-2 sm:gap-6 sm:pb-12 lg:col-span-8" role="list">
       {
-        services.map((service, i) => (
+        cards.map((service, i) => (
           <li class="sm:even:translate-y-12" data-reveal style={`--reveal-delay: ${(i % 2) * 90}ms`}>
             <article class="group relative flex h-full flex-col overflow-hidden rounded-[4px] bg-white p-7 shadow-[0_1px_2px_rgb(7_14_26/0.06)] ring-1 ring-navy-900/[0.07] transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_24px_50px_-24px_rgb(7_14_26/0.4)] sm:p-8">
-              <span class="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-500 ease-out group-hover:scale-x-100" />
+              <span class="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-500 ease-out group-hover:scale-x-100" />
+              {
+                service.photo && (
+                  <Image
+                    src={service.photo.meta}
+                    alt={service.photo.alt}
+                    widths={[400, 700].filter((w) => w <= service.photo!.meta.width)}
+                    sizes="(min-width: 1024px) 26rem, (min-width: 640px) 45vw, 100vw"
+                    class="-mx-7 -mt-7 mb-6 h-36 w-[calc(100%+3.5rem)] max-w-none object-cover sm:-mx-8 sm:-mt-8 sm:w-[calc(100%+4rem)]"
+                  />
+                )
+              }
               <div class="flex items-start justify-between">
                 <span class="grid size-14 place-items-center rounded-[3px] bg-navy-900 text-accent transition-colors duration-300 group-hover:bg-accent group-hover:text-navy-950">
                   <Icon name={service.icon} class="size-7" />
