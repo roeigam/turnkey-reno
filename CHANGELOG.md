@@ -1,8 +1,61 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.4.0**
+**Current version: 0.4.1**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.4.1] - 2026-10-17
+
+| Field | Value |
+|---|---|
+| Release type | Patch |
+| Previous version | 0.4.0 |
+| Git commit | 64beb86 |
+| Git tag | v0.4.1 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-17) |
+| Status | Pre-launch |
+
+### Summary
+Nothing visible on the website changed. The basement photos that are on hold are now kept completely out of the published site files, not just hidden from the page. A photo tool used only behind the scenes can also no longer cause a website build to fail if its download is unavailable.
+
+### Changed
+- Basement foundation crops moved from `src/assets/projects/basement-foundation/` to `src/assets/_disabled/projects/basement-foundation/`. `src/lib/images.ts` excludes `src/assets/_disabled/**` from the image glob, so these files are no longer emitted to `dist/`.
+- `src/lib/images.ts`: `asset()` throws a specific message when an enabled item points into `_disabled/`, explaining how to move the files out.
+- `site.ts`: basement project and Basement Finishing card image paths updated to `_disabled/…`, with comments to move the files out before enabling.
+- `ffmpeg-static` moved from `devDependencies` to `optionalDependencies`: if its install-time binary download fails, `npm install` / `npm ci` still succeed and the package is skipped. The site build never uses it.
+- `scripts/extract-project-photos.mjs`: loads `ffmpeg-static` on demand, with clear errors if it or the git-ignored `roof-video.mp4` is missing; writes the basement crops to `_disabled/`.
+- README: `_disabled/` convention for disabled content; deployment note on `ffmpeg-static` (optional, what to do if missing or if npm asks to approve its install script); videos kept out of git.
+
+### Fixed
+- The disabled basement crops were emitted to `dist/_astro/` as unreferenced files (known issue in 0.4.0).
+- Risk of a failed CI build: `ffmpeg-static`'s install script downloads an ~80 MB binary from GitHub and exits with an error if the download fails. As a devDependency, that failure aborted `npm install`.
+
+### Content status
+No content changes. Still placeholder: hero background photo. Client to confirm: project cities; whether the basement photos are of his own job; the 24-hour response promise; license and insurance before re-enabling the credentials advantage. Not yet set: production domain, privacy policy page, form service account.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- `dist/_astro`:
+  - 29 raster files, none matching the basement crops' dimensions (684×556, 696×600);
+  - no file name containing "basement" or "_disabled";
+  - no built text file (HTML/JS/CSS/JSON) mentioning `basement-foundation`.
+  - Before this change, two unreferenced basement JPEGs were present.
+- `ffmpeg-static` failure simulation (local npm 11.16, Node 24), with the download URL pointed at an unreachable address:
+  - minimal package with it as a devDependency: `npm install` exited 1;
+  - as an optionalDependency: `npm install` exited 0.
+- End-to-end CI simulation:
+  - a clean copy of the repository (tracked files only, no `node_modules`) was installed with `CI=true npm ci` and the ffmpeg download blocked;
+  - `npm ci` exited 0, with `ffmpeg-static` skipped;
+  - `npm run build` then succeeded (1 page built).
+- `scripts/extract-project-photos.mjs` re-run: all 11 crops written with identical dimensions, and git showed no content changes (byte-identical output); basement files went to `_disabled/`.
+- Not checked: an actual Netlify build (no Netlify site is connected yet; Netlify's default npm for Node 22 is npm 10, while the simulation used npm 11). No site code that affects the page changed, so browser checks were not repeated.
+
+### Known issues
+- Carried over: unused logo variants are still copied into `dist/_astro/` (a few KB each, not linked); the focus outline fades in from the text color (~150ms); the hero "Placeholder" badge sits close to the trust strip on desktop; source photo resolution limits (see 0.4.0).
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-17. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.4.0`.
 
 ## [0.4.0] - 2026-10-17
 
@@ -476,6 +529,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.4.1]: https://github.com/roeigam/turnkey-reno/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/roeigam/turnkey-reno/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/roeigam/turnkey-reno/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/roeigam/turnkey-reno/compare/v0.2.2...v0.3.0
