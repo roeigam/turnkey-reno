@@ -1,8 +1,103 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.4.2**
+**Current version: 0.5.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.5.0] - 2026-10-23
+
+| Field | Value |
+|---|---|
+| Release type | Minor |
+| Previous version | 0.4.2 |
+| Git commit | b28c647 |
+| Git tag | v0.5.0 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-23) |
+| Status | Pre-launch |
+
+### Summary
+The new sunroom renovation is now the lead project in the gallery. Visitors can drag a handle across the photo to compare the room before and after. The gallery is rearranged for four projects: the sunroom across the full width, with the other three in a row below. The top of the page now shows the finished sunroom behind the headline instead of the blueprint drawing, and the text stays easy to read. The blueprint version can be switched back on with one setting.
+
+### Added
+- Sunroom project (`site.ts` `projects`, first entry): "Sunroom Renovation", work type "Sunroom Remodel", city empty (client to confirm), `matchedPair: true`, `featured: true`, with alt texts describing what's visible.
+- `scripts/extract-project-photos.mjs`, sunroom section:
+  - aligns the clean before/after photos by a least-squares **uniform scale + offset** fitted to 4 documented landmarks (room corner at sill and floor, top and bottom of the door's hinge edge, weighted equally). Result: scale 0.7268, after crop `{left 154, top 131, width 1215, height 684}`;
+  - the before photo is downscaled (Lanczos) to the same 1215×684. No warping, lens correction, rotation or colour changes;
+  - writes `projects/sunroom/before-1.jpg`, `projects/sunroom/after-1.jpg` and `hero/sunroom-after.jpg` (full 1448×1086 after frame) as JPEG q95 4:4:4.
+- `settings.heroImage` (`'sunroom'` default | `'blueprint'`) and `hero.images` in `site.ts`. Each option has its own `src`, mobile/desktop focal point (`position`) and `placeholder` flag.
+- Source photos `src/assets/projects/source/sunroom-{before,after}.png` (reference only, excluded from the build).
+
+### Changed
+- `Projects.astro` layout:
+  - the featured card spans all 12 columns (2:1 on desktop, 16:10 on tablets, 4:3 on phones);
+  - the remaining cards share the row below evenly (3 → 4 columns each). This replaces the 7/5 column split with the featured card spanning rows;
+  - the small cards' caption bars share a minimum height on desktop, so the gold rules and the card bottoms line up across the row even when a title wraps.
+- `Projects.astro` and `BeforeAfterSlider.astro`: responsive `widths` now go up to the source width (never upscaled). Previously the attic slider only offered a 480w version. `sizes` updated for the new card widths.
+- Featured project: sunroom, previously the attic bedroom.
+- `Hero.astro`:
+  - renders the image chosen by `settings.heroImage`, with a per-image focal point (`object-position` from CSS variables);
+  - the photo variant gets its own overlay: a near-solid navy gradient behind the text on desktop that opens up on the right, and on phones a vertical wash lighter through the middle so the windows and fan show;
+  - the blueprint variant's overlays are unchanged;
+  - photo `sizes` is `(orientation: portrait) 250vw, 100vw`, because `cover` renders the photo wider than a portrait screen;
+  - widths 640/960/1280/1448, still `loading="eager"` + `fetchpriority="high"`.
+- `Hero.astro`: the Placeholder badge follows the selected image's `placeholder` flag, so it's hidden for the sunroom photo.
+- `scripts/generate-placeholders.mjs` / `hero.svg`: comment updated to point at `hero.images`.
+- README:
+  - sunroom alignment method;
+  - `settings.heroImage` and how to add a hero photo;
+  - layout note for `featured`;
+  - checklist: hero photo done (optional ≥ 2400px upgrade), sunroom added to "confirm cities".
+
+### Content status
+- Real now: hero background (sunroom after photo, 1448px wide).
+- Still placeholder or to confirm: cities for all four projects; whether the basement photos are of the client's own job; license and insurance before re-enabling the credentials advantage.
+- Not yet set: Web3Forms access key, production domain, privacy policy page.
+- Unchanged: basement disabled, no cities, no new services, credentials advantage off.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints. `npm run build`: pass, 1 page built.
+- `dist/`:
+  - no file from `source/`: no `sunroom-before`/`sunroom-after` PNG, no other source names, no basement or `_disabled` files;
+  - the only PNGs are the `public/` icons, logo and OG image.
+  - Hero WebPs: 640w 41 KB, 960w 87 KB, 1280w 139 KB, 1448w 172 KB.
+- Extraction re-run: the sunroom and hero outputs are byte-identical (SHA-1), and git shows no changes to the other projects' crops.
+- **Alignment:**
+  - remaining landmark error 29–37 px on a 1215 px-wide image. It's almost all vertical, from the different camera height and tilt: the corner sits higher in the before photo and the door lower. Horizontal error is ≤ 15 px.
+  - Split composites and real slider screenshots at 15/50/85%: the corner, window line, ceiling line and door read as one room. The far-left wall steps visibly at the sill, from the ultra-wide lens. The slider is kept.
+- Browser checks (Playwright driving Microsoft Edge against the dev server):
+  - **Sunroom slider:** Tab order is sunroom slider → its Photos button → attic slider. The knob focus ring shows on keyboard focus. 5× ArrowRight → 55; Home → 0; End → 100; ArrowLeft → 99, with the clip at `inset(0 1% 0 0)`.
+  - **Mouse:** drag to 15% → 15, to 85% → 85. **Touch** at 390px: tap at 80% → 80, CDP drag 80% → 20% → 20.
+  - **Independence:** moving either slider by keyboard, click, drag or touch left the other at its value.
+  - **Reduced motion:** no knob transition, no hero zoom animation. Without the preference, both run.
+  - **Lightbox (sunroom):** opens at "1 / 2 Before", ArrowRight → "2 / 2 After" and wraps back. Title "Sunroom Renovation", caption "Sunroom Remodel", images 1215w. Esc closes and focus returns to the Photos button.
+  - Desktop caption rules and card bottoms on the second row line up exactly (measured y positions identical). No horizontal overflow at 1440 or 390. No console errors.
+- **Hero contrast**, brightest 1% of background pixels behind each text element; every element passes WCAG AA in both variants:
+
+  | Element (need) | Sunroom 1440 | Sunroom 390 | Blueprint 1440 | Blueprint 390 |
+  |---|---|---|---|---|
+  | Eyebrow (4.5) | 8.07 | 5.07 | 8.47 | 8.55 |
+  | Headline white (3) | 13.80 | 9.14 | 17.80 | 17.42 |
+  | Headline gold (3) | 7.12 | 3.62 | 8.18 | 7.97 |
+  | Subheading (4.5) | 10.79 | 5.90 | 14.26 | 11.15 |
+  | Ghost button text (4.5) | 14.51 | 9.53 | 18.17 | 14.24 |
+  | Ghost button phone, 80% opacity (4.5) | 9.72 | 6.80 | 11.79 | 9.31 |
+  | Trust line, lowest of 3 (4.5) | 6.68 | 7.26 | 10.22 | 11.50 |
+
+- **Hero loading:**
+  - the 1448w version is picked at 1440px (1x and 2x) and on a 390px phone at 3x;
+  - LCP is the hero image (364 ms on the dev server);
+  - layout shift with the sunroom hero: 0 at 1440@1x and 390@3x. At 1440@2x there's a 0.0009 shift in the header nav, also present with the blueprint hero, so it's unrelated to the photo.
+- Placeholder badge: hidden with the sunroom hero, visible with the blueprint (checked by switching `settings.heroImage` temporarily, then reverting).
+- Not checked: load metrics on the production build or a real network (the dev server serves images unthrottled); real phones.
+
+### Known issues
+- The sunroom source is 1448px wide, so the hero is slightly soft on large retina screens; the overlay hides most of it. A ≥ 2400px photo would be sharper.
+- On phones (4:3 card), the sunroom slider crops most of the door at the right edge.
+- The original JPEGs of all imported images (including the new sunroom files) are still copied to `dist/_astro/` unreferenced (same cause as the unused logo variants).
+- Carried over: the focus outline fades in from the text color (~150ms); source photo resolution limits for the other projects (see 0.4.0).
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-23. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.4.2`.
 
 ## [0.4.2] - 2026-10-23
 
@@ -596,6 +691,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.5.0]: https://github.com/roeigam/turnkey-reno/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/roeigam/turnkey-reno/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/roeigam/turnkey-reno/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/roeigam/turnkey-reno/compare/v0.3.1...v0.4.0
