@@ -29,7 +29,7 @@ Node 22.12+ is required.
 | Projects (before/after)   | `projects`                                |
 | Tips                      | `tips`                                    |
 | Page title, description   | `seo`                                     |
-| Form backend              | `formConfig`                              |
+| Form backend (Web3Forms key) | `form.web3formsKey`                    |
 | Placeholder badges, noindex | `settings`                              |
 
 Items marked `placeholder: true` display a small **Placeholder** badge while `settings.showPlaceholderBadges` is `true`.
@@ -81,23 +81,26 @@ It uses `opentype.js` and `@fontsource/montserrat` (dev-only) plus `sharp`, whic
 
 ## Connecting the estimate form
 
-The form currently has no backend. Submitting a valid form shows a "not connected yet" notice. To connect it, fill in `formConfig` in `site.ts`:
+The form sends requests through [Web3Forms](https://web3forms.com). The only setting is the access key, in one place in `site.ts`:
 
-**Web3Forms**
 ```ts
-action: 'https://api.web3forms.com/submit',
-accessKey: '<your access key>',
-honeypotName: 'botcheck',
+export const form = {
+  web3formsKey: '<your access key>',
+};
 ```
 
-**Formspree**
-```ts
-action: 'https://formspree.io/f/<form-id>',
-accessKey: '',
-honeypotName: '_gotcha',
-```
+- **To connect or change it:** paste the key into `form.web3formsKey`, then rebuild and deploy. To disconnect, set it back to `''`.
+- **Where submissions go:** Web3Forms emails each request to the address the access key was created with. To send them to a different inbox, create a new key for that address at web3forms.com and replace the old one.
+- **The key is public by design.** Web3Forms access keys are meant to be in the page HTML, so it lives in `site.ts` and doesn't need an environment variable or a secret.
+- **While the key is empty** the form is not connected: a valid submission shows a "not connected yet" notice and nothing is sent.
 
-The form validates on the client (name, phone, 5-digit zip and service are required; email, budget and "I am a…" are optional, and email is format-checked only when filled in) and then submits via `fetch` with an inline success/error message. Without JavaScript it falls back to a normal POST. A hidden honeypot field catches basic spam bots.
+How it works: the form validates in the browser (name, phone, 5-digit zip and service are required; email, budget and "I am a…" are optional, and email is format-checked only when filled in). It then posts JSON to `https://api.web3forms.com/submit` without reloading the page. The email lists every field with a readable label (Name, Phone, Email, Zip code, I am a, Service, Budget, Message; empty optional fields say "Not provided"), with the subject "New estimate request: {service} ({zip})", sender name "Turnkey Reno website", and reply-to set to the customer's email when they gave one.
+
+- While sending, the button is disabled and reads "Sending...".
+- On success, a thank-you message replaces the form.
+- On an error or network failure, everything the visitor typed stays in place and an error message offers the phone number as a fallback.
+- Spam: a hidden `botcheck` field (Web3Forms' own honeypot) catches basic bots.
+- Without JavaScript, the form falls back to a normal POST to Web3Forms.
 
 ## Deploying
 
@@ -128,7 +131,7 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] `company.siteUrl` set to the real domain (no trailing slash)
 - [ ] `settings.noindex` → `false` (meta robots tag and robots.txt both update)
 - [ ] `settings.showPlaceholderBadges` → `false`, and placeholder content replaced
-- [ ] Form connected (`formConfig.action` + key), with a test submission received
+- [ ] Form connected (`form.web3formsKey` set), with a test submission received at the client's inbox
 - [ ] Privacy policy page added and linked in the footer (needed once the form collects data)
 - [ ] Sitemap added (`npx astro add sitemap`), then uncomment the `Sitemap:` line in `src/pages/robots.txt.ts`
 - [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
@@ -137,7 +140,6 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] Basement foundation project: show it only if the client confirms the photos are of his own job (`enabled: false` in `projects`)
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
 - [ ] Re-enable credentials advantage once license + insurance are obtained (see site.ts)
-- [ ] Confirm the "within 24 hours" response promise (estimate section intro) is realistic
 - [ ] Consider a domain email (e.g. info@yourdomain.com) instead of the Gmail address
 - [ ] Test on a real phone: call button, menu, gallery, form
 

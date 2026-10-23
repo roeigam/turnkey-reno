@@ -376,8 +376,7 @@ export const tips: { tag: string; title: string; body: string; placeholder?: boo
 export const estimate = {
   eyebrow: 'Free estimate',
   heading: 'Tell us about your project',
-  // CONFIRM WITH CLIENT before launch: 24-hour response must be realistic.
-  text: "Send us a few details and we'll get back to you within 24 hours to talk through your project and set up your free estimate.",
+  text: "Send us a few details and we'll get back to you to talk through your project and set up your free estimate.",
   steps: [
     { title: 'Send your request', text: 'Fill out the form or give us a call.' },
     { title: 'We reach out', text: 'We contact you to discuss the details.' },
@@ -388,24 +387,24 @@ export const estimate = {
   budgets: ['Under $10k', '$10k–$25k', '$25k–$50k', '$50k+', 'Not sure'],
   submitLabel: 'Request My Free Estimate',
   privacyNote: 'We only use your information to respond to your request.',
-  successMessage: "Thanks! Your request was sent. We'll be in touch soon.",
-  errorMessage: 'Something went wrong sending your request. Please call us instead.',
+  sendingLabel: 'Sending...',
+  successMessage: 'Thanks! We received your request and will contact you soon.',
+  /** `{phone}` is replaced with a tap-to-call link to company.phoneDisplay. */
+  errorMessage: "Sorry, your request didn't go through. Please try again, or call us at {phone}.",
   notConnectedMessage:
     'Preview mode: the form is not connected yet, so nothing was sent. Please call us to request your estimate.',
 };
 
 /**
- * Form backend. Leave `action` empty until the form service is set up.
- *  - Web3Forms: action 'https://api.web3forms.com/submit', accessKey from web3forms.com,
- *               honeypotName 'botcheck'
- *  - Formspree: action 'https://formspree.io/f/<your-id>', accessKey '', honeypotName '_gotcha'
+ * Form backend: Web3Forms (web3forms.com). Submissions are emailed to the address
+ * the access key was created with.
+ * While the key is empty the form is not connected: a valid submit shows
+ * `estimate.notConnectedMessage` and nothing is sent.
+ * The access key is meant to be public (it ends up in the page HTML), so it lives here
+ * rather than in an environment variable.
  */
-export const formConfig = {
-  action: '',
-  accessKey: '',
-  honeypotName: 'botcheck',
-  /** Subject line for the notification email (Web3Forms reads the `subject` field). */
-  subject: 'New free estimate request: Turnkey Reno website',
+export const form = {
+  web3formsKey: '',
 };
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
