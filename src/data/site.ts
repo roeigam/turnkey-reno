@@ -18,8 +18,8 @@
 /* ── Global switches ──────────────────────────────────────────────────────── */
 
 export const settings = {
-  /** Show "Placeholder" badges on unfinished content (useful on preview deploys). */
-  showPlaceholderBadges: true,
+  /** Show "Placeholder" badges on unfinished content (useful on preview deploys). Off since launch. */
+  showPlaceholderBadges: false,
   /** Enable once every service card has a photo, so the grid stays consistent. */
   showServiceImages: false,
   /**
@@ -28,20 +28,20 @@ export const settings = {
    */
   heroImage: 'sunroom' as HeroImageKey,
   /**
-   * Keep search engines out until launch: adds <meta name="robots" content="noindex">
-   * and a disallow-all robots.txt. Set to false at launch (together with siteUrl).
+   * true = keep search engines out: adds <meta name="robots" content="noindex"> and a
+   * disallow-all robots.txt. false since the public launch on the real domain.
    */
-  noindex: true,
+  noindex: false,
 };
 
 /* ── Company & contact ────────────────────────────────────────────────────── */
 
 export const company = {
   name: 'Turnkey Reno',
-  legalName: 'Turnkey Reno',
+  legalName: 'Turnkey Reno LLC',
   slogan: 'You start, we finish.',
-  /** Production URL, no trailing slash. Used for canonical, Open Graph and schema. */
-  siteUrl: 'https://example.com',
+  /** Production URL, no trailing slash. Used for canonical, Open Graph, schema, robots.txt and the sitemap. */
+  siteUrl: 'https://turnkeyrenollc.com',
   phoneDisplay: '(440) 337-5140',
   /** E.164 format, used for tel: links and schema. */
   phoneE164: '+14403375140',
@@ -439,8 +439,12 @@ export const estimate = {
   successMessage: 'Thanks! We received your request and will contact you soon.',
   /** `{phone}` is replaced with a tap-to-call link to company.phoneDisplay. */
   errorMessage: "Sorry, your request didn't go through. Please try again, or call us at {phone}.",
+  /**
+   * Shown instead of sending while form.web3formsKey is empty. `{phone}` becomes a tap-to-call link,
+   * `{email}` a mailto link pre-filled with what the visitor typed.
+   */
   notConnectedMessage:
-    'Preview mode: the form is not connected yet, so nothing was sent. Please call us to request your estimate.',
+    "Online requests are almost ready. In the meantime, call us at {phone} or email {email} and we'll set up your free estimate.",
 };
 
 /**

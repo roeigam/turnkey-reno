@@ -8,6 +8,8 @@ export default defineConfig({
   // Canonical / Open Graph URLs are built from this. Set the real domain in src/data/site.ts.
   site: company.siteUrl,
   output: 'static',
+  // privacy.html instead of privacy/index.html: Netlify serves /privacy directly (no redirect to /privacy/).
+  build: { format: 'file' },
   vite: {
     plugins: [tailwindcss()],
   },

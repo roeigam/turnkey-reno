@@ -85,6 +85,7 @@ const select = 'appearance-none pr-12';
           data-sending={estimate.sendingLabel}
           data-phone-display={company.phoneDisplay}
           data-phone-href={`tel:${company.phoneE164}`}
+          data-email={company.email}
         >
           {accessKey && <input type="hidden" name="access_key" value={accessKey} />}
           <input type="hidden" name="subject" value="New estimate request" />
@@ -208,7 +209,10 @@ const select = 'appearance-none pr-12';
           </div>
 
           <div class="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm text-slate-500"><span class="text-accent-700" aria-hidden="true">*</span> Required. {estimate.privacyNote}</p>
+            <p class="text-sm text-slate-500">
+              <span class="text-accent-700" aria-hidden="true">*</span> Required. {estimate.privacyNote}{' '}
+              <a href="/privacy" class="font-medium text-navy-900 underline underline-offset-2 hover:text-accent-700">Privacy policy</a>
+            </p>
             <button type="submit" class="btn btn-primary btn-lg w-full shrink-0 px-5 disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-8">
               <span data-submit-label>{estimate.submitLabel}</span>
               <Icon name="arrow" class="btn-arrow" />
@@ -284,15 +288,41 @@ const select = 'appearance-none pr-12';
     status.classList.toggle('hidden', !state);
   };
 
-  // Error message with "{phone}" turned into a tap-to-call link.
-  const showError = () => {
-    const [before, after = ''] = (form.dataset.error ?? '').split('{phone}');
-    const link = document.createElement('a');
-    link.href = form.dataset.phoneHref ?? '';
-    link.textContent = form.dataset.phoneDisplay ?? '';
-    link.className = 'font-bold whitespace-nowrap underline underline-offset-2';
-    setStatus('error');
-    status.append(before, link, after);
+  // A message with "{phone}" / "{email}" tokens turned into links.
+  const showMessage = (state: 'error' | 'info', template: string, mailto = '') => {
+    const link = (href: string, text: string) => {
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = text;
+      a.className = 'font-bold whitespace-nowrap underline underline-offset-2';
+      return a;
+    };
+    const links: Record<string, () => HTMLAnchorElement> = {
+      '{phone}': () => link(form.dataset.phoneHref ?? '', form.dataset.phoneDisplay ?? ''),
+      '{email}': () => link(mailto || `mailto:${form.dataset.email}`, form.dataset.email ?? ''),
+    };
+    setStatus(state);
+    status.append(...template.split(/(\{phone\}|\{email\})/).map((part) => links[part]?.() ?? part));
+  };
+  const showError = () => showMessage('error', form.dataset.error ?? '');
+
+  // mailto: link pre-filled with what the visitor typed, so nothing is lost while the form isn't connected.
+  const mailtoWithDetails = (data: FormData) => {
+    const value = (name: string) => String(data.get(name) ?? '').trim();
+    const lines = [
+      ['Name', value('name')],
+      ['Phone', value('phone')],
+      ['Email', value('email')],
+      ['Zip code', value('zip')],
+      ['I am a', value('customer_type')],
+      ['Service', value('service')],
+      ['Budget', value('budget')],
+      ['Message', value('message')],
+    ]
+      .filter(([, v]) => v)
+      .map(([k, v]) => `${k}: ${v}`);
+    const subject = `Free estimate request: ${value('service')} (${value('zip')})`;
+    return `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
   };
 
   // Replace the form with the thank-you message.
@@ -330,7 +360,8 @@ const select = 'appearance-none pr-12';
     const accessKey = String(data.get('access_key') ?? '');
     const action = form.getAttribute('action');
     if (!action || !accessKey) {
-      setStatus('info', form.dataset.notConnected);
+      // Not connected yet: keep what they typed and offer phone or a pre-filled email instead.
+      showMessage('info', form.dataset.notConnected ?? '', mailtoWithDetails(data));
       status.focus();
       return;
     }

@@ -9,7 +9,7 @@ import Logo from './Logo.astro';
   class="on-dark sticky top-0 z-50 border-b border-white/[0.06] bg-navy-950 text-white transition-shadow duration-300 data-[scrolled=true]:shadow-[0_10px_30px_-12px_rgb(0_0_0/0.6)]"
 >
   <div class="container-site flex h-16 items-center justify-between gap-6 lg:h-20">
-    <a href="#top" class="flex min-w-0 items-center rounded-[3px] py-1" aria-label={`${company.name}: back to top`}>
+    <a href="/#top" class="flex min-w-0 items-center rounded-[3px] py-1" aria-label={`${company.name}: home`}>
       <Logo
         variant={brand.headerLogo}
         class={brand.headerLogo === 'lockup' ? 'h-10 lg:h-14' : 'h-11 lg:h-14'}
@@ -24,7 +24,7 @@ import Logo from './Logo.astro';
           nav.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={`/${item.href}`}
                 data-nav-link
                 class="group relative py-2 font-display text-[0.95rem] font-semibold tracking-[0.14em] text-slate-300 uppercase transition-colors hover:text-white data-[active=true]:text-white"
               >
@@ -49,7 +49,7 @@ import Logo from './Logo.astro';
           <span class="font-display text-xl font-semibold tracking-wide">{company.phoneDisplay}</span>
         </span>
       </a>
-      <a href="#estimate" class="btn btn-primary">Free Estimate</a>
+      <a href="/#estimate" class="btn btn-primary">Free Estimate</a>
     </div>
 
     <!-- Mobile: hamburger only (call/estimate live in the bottom action bar) -->
@@ -86,7 +86,7 @@ import Logo from './Logo.astro';
           nav.map((item, i) => (
             <li class="border-b border-white/[0.07]">
               <a
-                href={item.href}
+                href={`/${item.href}`}
                 class="flex items-center justify-between py-4 font-display text-2xl font-semibold tracking-wider uppercase"
               >
                 <span>
@@ -103,7 +103,7 @@ import Logo from './Logo.astro';
         <a href={`tel:${company.phoneE164}`} class="btn btn-ghost-light">
           <Icon name="phone" /> {company.phoneDisplay}
         </a>
-        <a href="#estimate" class="btn btn-primary">Get a Free Estimate</a>
+        <a href="/#estimate" class="btn btn-primary">Get a Free Estimate</a>
       </div>
     </nav>
   </div>
@@ -142,8 +142,9 @@ import Logo from './Logo.astro';
 
   // Highlight the nav link for the section in view.
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+  // Links are "/#section" so they also work from other pages; only sections on this page are watched.
   const sections = [...links]
-    .map((a) => document.querySelector<HTMLElement>(a.getAttribute('href')!))
+    .map((a) => document.getElementById(new URL(a.href).hash.slice(1)))
     .filter((s): s is HTMLElement => !!s);
   if ('IntersectionObserver' in window && sections.length) {
     const io = new IntersectionObserver(
@@ -151,7 +152,7 @@ import Logo from './Logo.astro';
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
           const id = `#${entry.target.id}`;
-          links.forEach((a) => a.setAttribute('data-active', String(a.getAttribute('href') === id)));
+          links.forEach((a) => a.setAttribute('data-active', String(new URL(a.href).hash === id)));
         }
       },
       { rootMargin: '-45% 0px -50% 0px' },

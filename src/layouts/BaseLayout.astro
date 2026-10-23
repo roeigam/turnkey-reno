@@ -6,7 +6,17 @@ import '@fontsource/barlow-condensed/700.css';
 import '../styles/global.css';
 import { company, seo, settings, brand } from '../data/site';
 
-const canonical = new URL(Astro.url.pathname, company.siteUrl).href;
+interface Props {
+  /** Page title and description; default to the home page's (seo in site.ts). */
+  title?: string;
+  description?: string;
+  /** Public path of the page, e.g. '/privacy'. Builds the canonical and og:url. */
+  path?: string;
+}
+const { title = seo.title, description = seo.description, path = '/' } = Astro.props;
+const isHome = path === '/';
+
+const canonical = new URL(path, company.siteUrl).href;
 const ogImage = new URL(seo.ogImage, company.siteUrl).href;
 
 const { street, suite, city, region, postalCode, country } = company.address;
@@ -16,6 +26,7 @@ const jsonLd = {
   '@type': 'HomeAndConstructionBusiness',
   '@id': `${company.siteUrl}/#business`,
   name: company.name,
+  legalName: company.legalName,
   slogan: company.slogan,
   description: seo.description,
   url: company.siteUrl,
@@ -40,8 +51,8 @@ const jsonLd = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>{seo.title}</title>
-    <meta name="description" content={seo.description} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {settings.noindex && <meta name="robots" content="noindex, nofollow" />}
 
@@ -54,8 +65,8 @@ const jsonLd = {
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={company.name} />
-    <meta property="og:title" content={seo.title} />
-    <meta property="og:description" content={seo.description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
@@ -63,11 +74,11 @@ const jsonLd = {
     <meta property="og:image:alt" content={seo.ogImageAlt} />
     <meta property="og:locale" content={seo.locale} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={seo.title} />
-    <meta name="twitter:description" content={seo.description} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {isHome && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
     <!-- Enables JS-only enhancements (scroll reveal) without hiding content when JS is off. -->
     <script is:inline>document.documentElement.classList.add('js');</script>
