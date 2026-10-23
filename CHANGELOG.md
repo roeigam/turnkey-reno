@@ -1,8 +1,113 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.5.0**
+**Current version: 1.0.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [1.0.0] - 2026-10-23
+
+| Field | Value |
+|---|---|
+| Release type | Major (public launch) |
+| Previous version | 0.5.0 |
+| Git commit | 6bec80d |
+| Git tag | v1.0.0 |
+| Environment | Production (https://turnkeyrenollc.com) |
+| Status | Live |
+
+### Summary
+The website is officially public at turnkeyrenollc.com. Search engines can now find and list it, and a short privacy policy explains how estimate requests are handled. Until online requests are switched on, the form shows a friendly note with the phone number and email address. The email link opens a message that already contains what the visitor typed.
+
+### Note on earlier releases
+Releases 0.1.0 through 0.5.0 were recorded as "Not deployed". That was based on a check of the Netlify preview address that returned 404 when those entries were written. According to the site owner, those versions were in fact deployed to the Netlify preview (turnkey-reno.netlify.app). The older entries are left as written. From this release on, the environment is recorded as Production (https://turnkeyrenollc.com).
+
+### Added
+- `/privacy` (`src/pages/privacy.astro`): plain-English privacy policy in the site design, effective 2026-10-23. It covers:
+  - what the estimate form collects;
+  - delivery by email through Web3Forms;
+  - use only to respond to the request;
+  - not sold or shared for marketing;
+  - no cookies or analytics (verified in the code: no cookies, browser storage, analytics or third-party scripts; fonts are self-hosted);
+  - host technical data, retention and choices, children, changes, contact.
+  Linked from the footer and from the note under the form. The README marks it as a general template, not legal advice.
+- `/sitemap.xml` (`src/pages/sitemap.xml.ts`): home and privacy pages, `lastmod` = build date.
+- README "Hosting & domain" section for the client handoff:
+  - Netlify free plan (credit-based; push in batches);
+  - domain at Northwest Registered Agent, owned by Turnkey Reno LLC;
+  - the DNS records changed: `A @ → 75.2.60.5`, `CNAME www → turnkey-reno.netlify.app`, old `www` A record removed;
+  - the email records not to touch: MX, TXT SPF/DKIM/DMARC, CNAME psrp, `mail` A;
+  - how a change goes live, and rollback.
+- README "Privacy policy" and "After launch" sections.
+
+### Changed
+- `site.ts`:
+  - `company.siteUrl` → `https://turnkeyrenollc.com`;
+  - `company.legalName` → "Turnkey Reno LLC" (footer copyright, schema, privacy page);
+  - `settings.noindex` → `false`;
+  - `settings.showPlaceholderBadges` → `false`.
+- `BaseLayout.astro`:
+  - per-page `title`, `description` and `path`;
+  - canonical and `og:url` are built from `siteUrl` + path;
+  - `og:image`, `twitter:image` and JSON-LD `url`/`logo`/`image` are absolute on the domain;
+  - JSON-LD (with `legalName`) only on the home page.
+- `robots.txt`: `Allow: /` and `Sitemap: https://turnkeyrenollc.com/sitemap.xml` (was disallow-all).
+- `astro.config.mjs`: `build.format: 'file'`, so `/privacy` is served from `privacy.html` without a redirect to `/privacy/`.
+- Estimate form, while the Web3Forms key is empty:
+  - the "Preview mode: the form is not connected yet…" note is replaced by "Online requests are almost ready. In the meantime, call us at (440) 337-5140 or email turnkeyrenousa@gmail.com and we'll set up your free estimate.";
+  - the phone is a tap-to-call link, and the email is a `mailto:` pre-filled with the visitor's entries (subject "Free estimate request: {service} ({zip})");
+  - it stays in the gold info style and the typed values are kept.
+- Note under the form: adds a "Privacy policy" link.
+- `Header.astro`, `Footer.astro`, `MobileActionBar.astro`: section links are now `/#section`, so they work from /privacy. They still scroll in-page on the home page. Logo links are labelled "home".
+- `Header.astro`: the nav scroll-spy reads each link's hash, since the old `querySelector(href)` couldn't handle `/#…`.
+- `Footer.astro`: "Privacy Policy" link next to the copyright. Small text (`Serving …`, bottom bar) raised from slate-500 (≈4.0:1 on navy) to slate-400, which passes AA.
+- README:
+  - intro names the live domain;
+  - "Search engines" section rewritten (indexing on);
+  - the not-connected note described;
+  - "Before launch checklist" became "Launch checklist" (done items) plus "After launch" (pending items);
+  - "Deploying" became "Deploying elsewhere".
+
+### Removed
+- The `noindex` robots meta tag and the disallow-all robots.txt.
+- All placeholder URLs (`https://example.com`). `name@example.com` remains only as the sample address in the email-format hint.
+
+### Content status
+- Live and real: domain, logo, hero photo, 4 projects, contact details, privacy policy.
+- Pending (README "After launch"):
+  - Web3Forms access key and a test submission;
+  - cities for all four projects;
+  - license and insurance before re-enabling the credentials advantage;
+  - basement project confirmation;
+  - real-phone test;
+  - Search Console sitemap submission.
+- Optional: sharper hero and project photos, a branded OG image, a domain email.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints. `npm run build`: pass. Built pages: `/index.html`, `/privacy.html`, `/robots.txt`, `/sitemap.xml`.
+- Built HTML:
+  - canonical and `og:url` are `https://turnkeyrenollc.com/` and `https://turnkeyrenollc.com/privacy`;
+  - `og:image` and `twitter:image` are `https://turnkeyrenollc.com/og-image.png`;
+  - JSON-LD (home only) `url`/`logo`/`image`/`@id` are on the domain, `legalName` "Turnkey Reno LLC";
+  - no robots meta tag on either page;
+  - no `https://example.com` or `netlify.app` anywhere in `dist/`;
+  - no Placeholder badge.
+- Browser checks (Playwright driving Microsoft Edge against `astro preview` of the production build), at 1440px and 390px:
+  - head tags as above;
+  - 0 placeholder badges;
+  - home nav "Projects" scrolls in the same document (no reload) and the scroll-spy marks it active;
+  - form submit without a key shows the new note in the info style, with links `tel:+14403375140` and a `mailto:` carrying subject and labelled fields. Focus moves to the note and the typed values are kept;
+  - the privacy link is present under the form and in the footer;
+  - `/privacy` returns 200 with the right title and canonical, all 9 sections, no JSON-LD and no robots meta;
+  - from /privacy, header "Services" goes to `/#services` with the section in view (desktop), and the mobile bar "Free estimate" goes to `/#estimate`;
+  - no horizontal overflow, no console errors.
+- Not checked at release time: the live site after the push (HTTPS, tags, robots.txt, sitemap, /privacy, form note). The push that deploys this release happens after the release commit; those results will be reported and recorded in the next release.
+
+### Known issues
+- The Netlify project subdomain (turnkey-reno.netlify.app) still serves the site too; its canonical tags point to the domain.
+- Carried over: the original JPEGs of imported images are copied to `dist/_astro/` unreferenced; the hero source is 1448px wide; some project photos are low resolution; the focus outline fades in from the text color (~150ms); a 0.0009 layout shift in the header nav at 2x while fonts load.
+
+### Deployment and rollback
+Deployed to production (https://turnkeyrenollc.com) via push to main → Netlify (turnkey-reno.netlify.app). Rollback: publish the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.5.0` and push.
 
 ## [0.5.0] - 2026-10-23
 
@@ -691,6 +796,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[1.0.0]: https://github.com/roeigam/turnkey-reno/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/roeigam/turnkey-reno/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/roeigam/turnkey-reno/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/roeigam/turnkey-reno/compare/v0.4.0...v0.4.1
