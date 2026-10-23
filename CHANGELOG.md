@@ -1,8 +1,75 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 0.4.1**
+**Current version: 0.4.2**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [0.4.2] - 2026-10-23
+
+| Field | Value |
+|---|---|
+| Release type | Patch |
+| Previous version | 0.4.1 |
+| Git commit | c1c02f9 |
+| Git tag | v0.4.2 |
+| Environment | Not deployed (local builds only; turnkey-reno.netlify.app returned 404 on 2026-10-23) |
+| Status | Pre-launch |
+
+### Summary
+The estimate section no longer promises a reply within 24 hours; it now simply says we'll get back to you. The estimate form is ready to send requests by email through Web3Forms. It switches on as soon as the access key is added, and until then it still shows the "not connected yet" notice. Once connected, visitors see a thank-you message after sending, and if anything goes wrong their details stay in the form along with the phone number to call instead.
+
+### Changed
+- `site.ts` `estimate.text`: "within 24 hours" removed, along with its "CONFIRM WITH CLIENT" comment. It now reads "Send us a few details and we'll get back to you to talk through your project and set up your free estimate."
+- `site.ts`: `formConfig` (`action`, `accessKey`, `honeypotName`, `subject`) replaced by `form.web3formsKey`, the single setting for the form backend (empty = not connected).
+- `site.ts` `estimate`: new `sendingLabel` ("Sending..."). `successMessage` is now "Thanks! We received your request and will contact you soon." `errorMessage` now includes the phone number via a `{phone}` token.
+- `EstimateForm.astro`: with a key set, the form posts JSON to `https://api.web3forms.com/submit` via `fetch` (no page reload), with these fields:
+  - readable labels: Name, Phone, Email, Zip code, I am a, Service, Budget, Message (empty optional fields are sent as "Not provided");
+  - `subject` "New estimate request: {service} ({zip})";
+  - `from_name` "Turnkey Reno website";
+  - `replyto` set to the customer's email only when they gave one.
+- `EstimateForm.astro`: while sending, the button is disabled and reads "Sending...". On success, a thank-you panel replaces the form and receives focus. On an API error (`success: false`), a non-OK HTTP status or a network failure, the typed values are kept and the error message shows a tap-to-call link.
+- `EstimateForm.astro`: honeypot field hard-coded as `botcheck` (Web3Forms' own honeypot). A filled honeypot shows the thank-you panel and sends nothing.
+- README: "Connecting the estimate form" rewritten:
+  - how to set or change the key;
+  - submissions go to the email address the key was created with;
+  - the key is public by design, so it isn't an environment variable;
+  - what's sent and how the form behaves.
+- README launch checklist: the 24-hour item removed; the form item now refers to `form.web3formsKey`.
+
+### Removed
+- The 24-hour response promise and its launch-checklist item (the client won't commit to a response time).
+- Formspree configuration notes (Web3Forms is the chosen service).
+
+### Content status
+- Still placeholder: hero background photo.
+- Client to confirm: project cities; whether the basement photos are of his own job; license and insurance before re-enabling the credentials advantage.
+- Not yet set: Web3Forms access key (the client is creating it), production domain, privacy policy page.
+- Unchanged: basement project disabled, captions without cities, no new services, credentials advantage off.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints.
+- `npm run build`: pass, 1 page built.
+- Search across the project (excluding older CHANGELOG entries): no remaining "24 hour", "24-hour" or "within 24" text, and no `formConfig` / `honeypotName` references.
+- Built `dist/index.html` with an empty key: the form has no `action`, there's no `access_key` input, and the honeypot is named `botcheck`.
+- Browser checks (Playwright driving Microsoft Edge against the dev server):
+  - **Key empty:** an empty submit flags 4 required fields and focuses Full name. A valid submit shows the "not connected" notice, keeps the values and makes 0 requests.
+  - **Key set** (temporary dummy key `TEST-KEY-0000`, reverted before commit; Web3Forms endpoint intercepted, so nothing reached Web3Forms):
+    - the form's `action` is the Web3Forms URL and the `access_key` input carries the key;
+    - the request is a `POST` with `Content-Type: application/json`, and the payload has the labelled fields, subject "New estimate request: Kitchen Remodeling (44721)", from_name "Turnkey Reno website" and `replyto` = the entered email;
+    - with email, budget, "I am a" and message left empty, there's no `replyto` and those fields read "Not provided";
+    - while waiting for a response the button is disabled and reads "Sending...";
+    - on success the thank-you panel replaces the form and gets focus, with no page navigation;
+    - API `success: false`, HTTP 500 with a non-JSON body, and an aborted request each show the error message with a `tel:+14403375140` link, keep all typed values and re-enable the button. A retry after a network failure succeeds without retyping;
+    - a filled honeypot sends 0 requests and shows the thank-you panel;
+    - screenshots of the sending, error and success states at 1440px, and of error and success at 390px. No horizontal overflow on mobile and no console errors.
+- Not checked: a real submission to Web3Forms (no access key yet). Once the key is in, send a test request and confirm it arrives in the client's inbox.
+
+### Known issues
+- Without JavaScript, the fallback POST goes to Web3Forms with the raw field names and a generic subject ("New estimate request"), and the visitor leaves the site for Web3Forms' response page. This path was not tested.
+- Carried over: unused logo variants are still copied into `dist/_astro/`; the focus outline fades in from the text color (~150ms); the hero "Placeholder" badge sits close to the trust strip on desktop; source photo resolution limits (see 0.4.0).
+
+### Deployment and rollback
+Not deployed: turnkey-reno.netlify.app returned 404 on 2026-10-23. The code is on GitHub (`main`). Once Netlify is connected, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to tag `v0.4.1`.
 
 ## [0.4.1] - 2026-10-17
 
@@ -529,6 +596,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[0.4.2]: https://github.com/roeigam/turnkey-reno/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/roeigam/turnkey-reno/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/roeigam/turnkey-reno/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/roeigam/turnkey-reno/compare/v0.3.0...v0.3.1
