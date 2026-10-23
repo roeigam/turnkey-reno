@@ -1,11 +1,13 @@
 ---
 import { Image } from 'astro:assets';
-import { company, hero } from '../data/site';
+import { company, hero, settings } from '../data/site';
 import { asset, isSvg } from '../lib/images';
 import Icon from './Icon.astro';
 import PlaceholderBadge from './PlaceholderBadge.astro';
 
-const bg = asset(hero.image.src);
+const image = hero.images[settings.heroImage];
+const bg = asset(image.src);
+const photo = !isSvg(bg);
 // "You start, we finish." → "You start," + highlighted "we finish."
 const commaAt = company.slogan.indexOf(',');
 const [lead, highlight] =
@@ -16,20 +18,37 @@ const [lead, highlight] =
   <div class="absolute inset-0 -z-20 overflow-hidden">
     <Image
       src={bg}
-      alt={hero.image.alt}
-      {...(isSvg(bg) ? {} : { widths: [768, 1280, 1920, 2560].filter((w) => w <= bg.width), sizes: '100vw' })}
+      alt={image.alt}
+      {...(photo
+        ? {
+            widths: [640, 960, 1280, 1920, 2560].filter((w) => w < bg.width).concat(bg.width),
+            // On portrait screens `cover` scales the photo to the hero's height, so it renders wider than the viewport.
+            sizes: '(orientation: portrait) 250vw, 100vw',
+          }
+        : {})}
       loading="eager"
       fetchpriority="high"
-      class="hero-zoom size-full object-cover object-[70%_center]"
+      class="hero-zoom size-full object-cover object-(--obj-m) lg:object-(--obj-d)"
+      style={`--obj-m: ${image.position.mobile}; --obj-d: ${image.position.desktop}`}
     />
   </div>
-  <!-- Overlays: strong navy on the text side, blueprint grid, bottom fade -->
-  <div
-    class="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--color-navy-950)_0%,rgb(7_14_26/0.92)_38%,rgb(7_14_26/0.55)_70%,rgb(7_14_26/0.35)_100%)]"
-  >
-  </div>
-  <div class="absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(100deg,black_10%,transparent_65%)]"></div>
-  <div class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-navy-950/80 to-transparent"></div>
+  {
+    photo ? (
+      <>
+        {/* Photo overlays: near-solid navy behind the text, opening up to the right on desktop; uniform wash on phones */}
+        <div class="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(7_14_26/0.74)_0%,rgb(7_14_26/0.66)_45%,rgb(7_14_26/0.82)_80%,rgb(7_14_26/0.92)_100%)] lg:bg-[linear-gradient(100deg,rgb(7_14_26/0.97)_0%,rgb(7_14_26/0.93)_40%,rgb(7_14_26/0.62)_68%,rgb(7_14_26/0.3)_100%)]" />
+        <div class="absolute inset-0 -z-10 bg-blueprint opacity-60 [mask-image:linear-gradient(100deg,black_10%,transparent_55%)]" />
+        <div class="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-navy-950/90 to-transparent" />
+      </>
+    ) : (
+      <>
+        {/* Overlays: strong navy on the text side, blueprint grid, bottom fade */}
+        <div class="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--color-navy-950)_0%,rgb(7_14_26/0.92)_38%,rgb(7_14_26/0.55)_70%,rgb(7_14_26/0.35)_100%)]" />
+        <div class="absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(100deg,black_10%,transparent_65%)]" />
+        <div class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-navy-950/80 to-transparent" />
+      </>
+    )
+  }
   <!-- Amber vertical rule on large screens -->
   <div class="absolute top-0 bottom-0 left-[max(1.25rem,calc((100vw-80rem)/2+2.5rem))] -z-10 hidden w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent xl:block"></div>
 
@@ -75,7 +94,7 @@ const [lead, highlight] =
     </ul>
   </div>
 
-  <PlaceholderBadge show={hero.image.placeholder} dark class="absolute right-4 bottom-[clamp(4rem,9vw,7rem)] hidden sm:inline-flex" />
+  <PlaceholderBadge show={image.placeholder} dark class="absolute right-4 bottom-[clamp(4rem,9vw,7rem)] hidden sm:inline-flex" />
 
   <!-- Angled bottom edge into the light section -->
   <svg

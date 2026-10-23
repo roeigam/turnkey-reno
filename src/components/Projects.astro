@@ -42,8 +42,10 @@ const slides = cards.map((c) => ({
   ],
 }));
 
-const rows = Math.max(cards.length - 1, 1); // the featured card spans all rows of the right column
-const widths = (m: ImageMetadata) => [400, 640, 960].filter((w) => w <= m.width).concat(m.width < 400 ? [m.width] : []);
+// Desktop: the featured card spans the full width; the others share the row below evenly.
+const spans: Record<number, string> = { 1: 'lg:col-span-12', 2: 'lg:col-span-6', 3: 'lg:col-span-4', 4: 'lg:col-span-3' };
+const restSpan = spans[cards.length - 1] ?? 'lg:col-span-4';
+const widths = (m: ImageMetadata) => [400, 640, 960].filter((w) => w < m.width).concat(m.width);
 const chip = 'pointer-events-none absolute top-3 z-10 rounded-[2px] px-2.5 py-1 font-display text-xs font-semibold tracking-[0.16em] uppercase';
 ---
 
@@ -57,37 +59,29 @@ const chip = 'pointer-events-none absolute top-3 z-10 rounded-[2px] px-2.5 py-1 
       </a>
     </div>
 
-    <ul
-      class="mt-12 grid gap-5 sm:gap-6 lg:mt-16 lg:grid-cols-12 lg:grid-rows-[repeat(var(--rows),minmax(0,1fr))]"
-      style={`--rows: ${rows}`}
-      role="list"
-    >
+    <ul class="mt-12 grid gap-5 sm:gap-6 lg:mt-16 lg:grid-cols-12" role="list">
       {
         cards.map((c, i) => {
           const isFeatured = i === 0;
           const total = c.before.length + c.after.length;
           const openLabel = `View all ${total} photos: ${c.project.title}`;
           return (
-            <li
-              class:list={['flex', isFeatured ? 'lg:col-span-7 lg:row-[span_var(--rows)/span_var(--rows)]' : 'lg:col-span-5']}
-              data-reveal
-              style={`--reveal-delay: ${i * 80}ms`}
-            >
+            <li class:list={['flex', isFeatured ? 'lg:col-span-12' : restSpan]} data-reveal style={`--reveal-delay: ${i * 80}ms`}>
               <article class="flex w-full flex-col overflow-hidden rounded-[4px] bg-navy-950 shadow-[0_24px_50px_-28px_rgb(7_14_26/0.55)] ring-1 ring-navy-900/10">
                 {c.project.matchedPair ? (
                   <BeforeAfterSlider
                     before={c.before[0]}
                     after={c.after[0]}
                     label={c.project.title}
-                    sizes={isFeatured ? '(min-width: 1280px) 46rem, (min-width: 1024px) 58vw, 100vw' : '(min-width: 1024px) 40vw, 100vw'}
-                    class:list={['aspect-[5/4] w-full', isFeatured ? 'lg:aspect-auto lg:min-h-[36rem] lg:flex-1' : 'lg:aspect-auto lg:min-h-[15rem] lg:flex-1']}
+                    sizes={isFeatured ? '(min-width: 1280px) 75rem, 100vw' : '(min-width: 1280px) 24rem, (min-width: 1024px) 31vw, 100vw'}
+                    class:list={['w-full', isFeatured ? 'aspect-[4/3] sm:aspect-[16/10] lg:aspect-[2/1]' : 'aspect-[5/4] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[18rem] lg:flex-1']}
                   />
                 ) : (
                   <button
                     type="button"
                     class:list={[
                       'group relative grid w-full grid-cols-2 gap-0.5 bg-navy-950 text-left',
-                      isFeatured ? 'aspect-[5/4] lg:aspect-auto lg:min-h-[36rem] lg:flex-1' : 'aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[15rem] lg:flex-1',
+                      isFeatured ? 'aspect-[5/4] sm:aspect-[16/10] lg:aspect-[2/1]' : 'aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[18rem] lg:flex-1',
                     ]}
                     data-open-project={i}
                     aria-label={openLabel}
@@ -99,7 +93,7 @@ const chip = 'pointer-events-none absolute top-3 z-10 rounded-[2px] px-2.5 py-1 
                           src={shot.meta}
                           alt={shot.alt}
                           widths={widths(shot.meta)}
-                          sizes={isFeatured ? '(min-width: 1024px) 29vw, 50vw' : '(min-width: 1024px) 20vw, 50vw'}
+                          sizes={isFeatured ? '(min-width: 1280px) 37.5rem, 50vw' : '(min-width: 1280px) 12rem, (min-width: 1024px) 16vw, 50vw'}
                           class="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                         />
                         <span class:list={[chip, k === 0 ? 'left-3 bg-navy-950/85 text-white' : 'right-3 bg-accent text-navy-950']}>
@@ -113,10 +107,18 @@ const chip = 'pointer-events-none absolute top-3 z-10 rounded-[2px] px-2.5 py-1 
                   </button>
                 )}
 
-                <div class="flex items-center justify-between gap-4 border-t-2 border-accent px-5 py-4 text-white sm:px-6">
+                {/* Small cards: room for a two-line title, so the gold rules line up across the row */}
+                <div class:list={['flex items-center justify-between gap-4 border-t-2 border-accent px-5 py-4 text-white sm:px-6', !isFeatured && 'lg:min-h-[6.75rem]']}>
                   <div class="min-w-0">
                     <p class="font-display text-xs font-semibold tracking-[0.2em] text-accent uppercase sm:text-sm">{c.caption}</p>
-                    <h3 class="mt-0.5 font-display text-xl leading-tight font-bold tracking-wide uppercase sm:text-2xl">{c.project.title}</h3>
+                    <h3
+                      class:list={[
+                        'mt-0.5 font-display text-xl leading-tight font-bold tracking-wide uppercase sm:text-2xl',
+                        isFeatured ? 'lg:text-3xl' : 'lg:text-xl',
+                      ]}
+                    >
+                      {c.project.title}
+                    </h3>
                   </div>
                   <button
                     type="button"

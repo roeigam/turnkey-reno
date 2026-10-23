@@ -31,7 +31,7 @@ const grid = (id, size, opacity) => `
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 const hero = `<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1400" viewBox="0 0 2400 1400">
-  <!-- PLACEHOLDER hero image. Replace with a real project photo and update hero.image.src in src/data/site.ts -->
+  <!-- PLACEHOLDER hero image. Used when settings.heroImage is "blueprint" (see hero.images in src/data/site.ts) -->
   <defs>
     <radialGradient id="glow" cx="72%" cy="55%" r="60%">
       <stop offset="0" stop-color="#1f3657"/>

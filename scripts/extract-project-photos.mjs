@@ -2,7 +2,8 @@
  * Extracts clean project photos from the client's social-media composites and
  * the roof reel in src/assets/projects/source/ (reference only; excluded from the build).
  *
- * Crop only: no resizing, sharpening or other edits. Crops are re-encoded as
+ * Crop only: no resizing, sharpening or other edits, except the sunroom before photo, which is
+ * uniformly downscaled to match the after photo's scale (see below). Crops are re-encoded as
  * JPEG quality 95 with 4:4:4 chroma; Astro then resizes/converts them at build time.
  * Every box below was measured on the source pixels; the comments say what each one avoids.
  *
@@ -50,6 +51,59 @@ await save(src('concrete-walkway.jpeg'), { left: 685, top: 134, width: 674, heig
  * Stored but not shown: written to src/assets/_disabled/ (excluded from the build, see site.ts). */
 await save(src('basement-foundation.jpeg'), { left: 0, top: 240, width: 684, height: 556 }, '_disabled/projects/basement-foundation/before-1.jpg');
 await save(src('basement-foundation.jpeg'), { left: 840, top: 194, width: 696, height: 600 }, '_disabled/projects/basement-foundation/after-1.jpg');
+
+/* ── Sunroom: sunroom-before.png (1672×941) and sunroom-after.png (1448×1086) ──
+ * Clean photos (no logos or labels), shot from about the same spot; the after photo uses an
+ * ultra-wide lens, so the room appears smaller in it. For the comparison slider the two are
+ * aligned by a uniform scale and a crop only: no warping, lens correction or rotation.
+ * The after photo was also tilted slightly upward, so verticals near its edges lean ~3°; that
+ * residual can't be removed without warping and is left as is.
+ *
+ * Landmarks [before x, y] → [after x, y], measured on 2–3× zoomed source crops. The room corner and
+ * the door get two points each, so the fit weighs the two structures the slider handle crosses
+ * equally. What remains is mostly vertical (camera height/tilt differ): about ±30 px, split evenly
+ * between the corner (before sits higher) and the door (before sits lower). Horizontal error ≤ 15 px.
+ * Hinge positions (before → after: y287→312, y467→450, y660→580) were used to check the scale. */
+const sunroomLandmarks = [
+  [[955, 513], [850, 533]], // room corner where the window sill meets the wall
+  [[955, 600], [851, 602]], // room corner at the floor
+  [[1459, 232], [1199, 272]], // door slab, top of the hinge edge
+  [[1455, 735], [1220, 630]], // door slab, bottom of the hinge edge
+];
+// Least-squares uniform scale + offset mapping before → after coordinates.
+const mean = (pts) => pts.reduce(([x, y], [px, py]) => [x + px / pts.length, y + py / pts.length], [0, 0]);
+const [bx, by] = mean(sunroomLandmarks.map(([b]) => b));
+const [ax, ay] = mean(sunroomLandmarks.map(([, a]) => a));
+let num = 0;
+let den = 0;
+for (const [[x1, y1], [x2, y2]] of sunroomLandmarks) {
+  num += (x1 - bx) * (x2 - ax) + (y1 - by) * (y2 - ay);
+  den += (x1 - bx) ** 2 + (y1 - by) ** 2;
+}
+const scale = num / den;
+const offset = [ax - scale * bx, ay - scale * by];
+// The whole before frame, scaled, lands inside the after photo: crop the after photo to it and
+// downscale the before photo to exactly the same size (never upscaled).
+const sunroomBox = {
+  left: Math.round(offset[0]),
+  top: Math.round(offset[1]),
+  width: Math.round(1672 * scale),
+  height: Math.round(941 * scale),
+};
+const residuals = sunroomLandmarks.map(([[x1, y1], [x2, y2]]) => Math.hypot(scale * x1 + offset[0] - x2, scale * y1 + offset[1] - y2));
+console.log(`sunroom fit: scale ${scale.toFixed(4)}, after crop ${JSON.stringify(sunroomBox)}, landmark error ${residuals.map((r) => r.toFixed(1)).join('/')} px`);
+{
+  const target = 'projects/sunroom/before-1.jpg';
+  mkdirSync(dirname(out(target)), { recursive: true });
+  const info = await sharp(src('sunroom-before.png'))
+    .resize(sunroomBox.width, sunroomBox.height, { fit: 'fill', kernel: 'lanczos3' }) // uniform: aspect differs by < 0.1%
+    .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
+    .toFile(out(target));
+  console.log(`${target.padEnd(38)} ${info.width}×${info.height}`);
+}
+await save(src('sunroom-after.png'), sunroomBox, 'projects/sunroom/after-1.jpg');
+// Hero background: the full after frame, uncropped (the hero picks its focal point in CSS).
+await save(src('sunroom-after.png'), { left: 0, top: 0, width: 1448, height: 1086 }, 'hero/sunroom-after.jpg');
 
 /* ── Roof replacement: frames from roof-video.mp4 (1080×1920, 30 fps, 21 s) ──
  * Frames chosen by content, then the sharpest frame (Laplacian variance) within ±8 frames.

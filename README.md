@@ -30,7 +30,7 @@ Node 22.12+ is required.
 | Tips                      | `tips`                                    |
 | Page title, description   | `seo`                                     |
 | Form backend (Web3Forms key) | `form.web3formsKey`                    |
-| Placeholder badges, noindex | `settings`                              |
+| Placeholder badges, noindex, hero background | `settings`             |
 
 Items marked `placeholder: true` display a small **Placeholder** badge while `settings.showPlaceholderBadges` is `true`.
 
@@ -43,17 +43,22 @@ Images live in **`src/assets/`** and are referenced from `site.ts` by path relat
   - `city`: the caption shows "Work type · City, OH", or just the work type while `city` is empty;
   - `before[]` and `after[]` images, each with alt text;
   - `matchedPair: true` when before and after are shot from the same angle, which gives an interactive comparison slider. Otherwise the card shows before | after side by side;
-  - `featured: true` for the large card (one project);
+  - `featured: true` for the large card (one project). On desktop it spans the full width and the other projects share the row below it evenly (3 projects → three columns);
   - `enabled: false` to keep a project in the data without showing it. Put its images in `src/assets/_disabled/`, which is excluded from the build. Every image in the regular asset folders is bundled into `dist/` even when unused, so this keeps disabled content from shipping. To enable it, move the files back under `src/assets/projects/` and update the paths. The build stops with a clear message if an enabled item still points into `_disabled/`.
 
   The lightbox shows all of a project's photos, befores first, each labelled Before/After.
 - **Project photo sources:** the client's social-media composites and reels live in `src/assets/projects/source/` and are **never shipped**, because they're excluded from the image glob. The videos (`*.mp4`) are also kept out of git because of their size. `node scripts/extract-project-photos.mjs` crops the clean photos out of the composites. It only crops (no resizing or edits), every crop box is documented in the script, and it pulls the roof frames from the reel with `ffmpeg-static`, which needs the video present locally.
+- **Sunroom (comparison slider):** the client's photos are clean, but the after photo was shot with an ultra-wide lens, so the room appears smaller. To line them up for the slider, the script fits a uniform scale and offset to landmarks measured in both photos (room corner, door edge). It then crops the after photo and downscales the before photo to the same size. Nothing is warped or lens-corrected, so the far-left wall still steps a little at the slider handle. The full, uncropped after photo is written to `src/assets/hero/sunroom-after.jpg` for the hero.
 - **Service card photos:** each service can have an optional `image`. These only render when `settings.showServiceImages` is `true`. Turn it on once every service card has a photo, so the grid stays consistent.
-- **Hero background:** replace `hero.image.src` with a wide photo (≥ 2400px). The dark overlay keeps text readable.
+- **Hero background:** `settings.heroImage` picks one of `hero.images`:
+  - `'sunroom'` (default): the sunroom after photo under a navy overlay;
+  - `'blueprint'`: the original placeholder, which shows a Placeholder badge.
+
+  Each option has a `position` (CSS object-position) for phones and for desktop, which sets the focal point. To use a new photo, put it in `src/assets/hero/` (ideally ≥ 2400px wide; the sunroom photo is 1448px), add an entry to `hero.images`, and select it. The overlay is tuned so all hero text meets WCAG AA contrast on the sunroom photo. Re-check the contrast if you swap in a much brighter photo.
 
 A missing image path fails the build with a message listing the available files.
 
-`scripts/generate-placeholders.mjs` regenerates the placeholder hero image (`node scripts/generate-placeholders.mjs`).
+`scripts/generate-placeholders.mjs` regenerates the blueprint placeholder hero image (`node scripts/generate-placeholders.mjs`).
 
 ## Logo
 
@@ -135,8 +140,8 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [ ] Privacy policy page added and linked in the footer (needed once the form collects data)
 - [ ] Sitemap added (`npx astro add sitemap`), then uncomment the `Sitemap:` line in `src/pages/robots.txt.ts`
 - [ ] OG image: `public/og-image.png` now uses the real logo. Optionally swap in a branded photo version (1200×630)
-- [ ] Confirm the city for each project (`city` in `projects`, currently empty), and add more projects as photos arrive
-- [ ] Real hero photo: the background is still the blueprint placeholder, and none of the project photos is large enough
+- [ ] Confirm the city for each project (`city` in `projects`, currently empty for all four: sunroom, attic, roof, concrete), and add more projects as photos arrive
+- [x] Real hero photo: the sunroom after photo (`settings.heroImage: 'sunroom'`). Optional upgrade: a sharper ≥ 2400px wide photo for large and retina screens
 - [ ] Basement foundation project: show it only if the client confirms the photos are of his own job (`enabled: false` in `projects`)
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
 - [ ] Re-enable credentials advantage once license + insurance are obtained (see site.ts)
@@ -156,5 +161,5 @@ src/
   pages/robots.txt.ts   ← generated robots.txt (follows settings.noindex)
   styles/global.css     ← Tailwind theme tokens, buttons, textures, motion
 public/                 ← favicon, OG image (copied as-is)
-scripts/                ← placeholder image generator
+scripts/                ← logo, placeholder and project-photo scripts
 ```

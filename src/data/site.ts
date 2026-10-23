@@ -23,6 +23,11 @@ export const settings = {
   /** Enable once every service card has a photo, so the grid stays consistent. */
   showServiceImages: false,
   /**
+   * Hero background (see `hero.images`): 'sunroom' = the sunroom project's after photo under a
+   * navy overlay; 'blueprint' = the original blueprint placeholder (shows a Placeholder badge).
+   */
+  heroImage: 'sunroom' as HeroImageKey,
+  /**
    * Keep search engines out until launch: adds <meta name="robots" content="noindex">
    * and a disallow-all robots.txt. Set to false at launch (together with siteUrl).
    */
@@ -115,12 +120,35 @@ export const hero = {
   primaryCta: 'Get a Free Estimate',
   secondaryCta: 'Call Now',
   highlights: ['Free, no-obligation estimates', 'Budget-based planning', 'Homeowners & investors'],
-  image: {
-    src: 'hero/hero.svg', // placeholder: replace with a wide project photo (≥ 2400px)
-    alt: '',              // decorative background; leave empty unless it conveys information
-    placeholder: true,
-  },
+  /**
+   * Background options; `settings.heroImage` picks one. `alt` stays empty (decorative background).
+   * `position` is the CSS object-position (focal point) on phones and on desktop (≥ 1024px).
+   * To use a new photo, add it under src/assets/hero/ (ideally ≥ 2400px wide) and point `src` at it.
+   */
+  images: {
+    sunroom: {
+      src: 'hero/sunroom-after.jpg',
+      alt: '',
+      position: { mobile: '50% 40%', desktop: '50% 45%' },
+      placeholder: false,
+    },
+    blueprint: {
+      src: 'hero/hero.svg',
+      alt: '',
+      position: { mobile: '70% 50%', desktop: '70% 50%' },
+      placeholder: true,
+    },
+  } satisfies Record<string, HeroImage>,
 };
+
+export interface HeroImage {
+  src: string;
+  alt: string;
+  position: { mobile: string; desktop: string };
+  /** Shows a "Placeholder" badge while settings.showPlaceholderBadges is true. */
+  placeholder: boolean;
+}
+export type HeroImageKey = keyof typeof hero.images;
 
 /* ── Trust strip ──────────────────────────────────────────────────────────── */
 
@@ -267,12 +295,32 @@ export const projectCaption = (p: Project) => (p.city ? `${p.workType} · ${p.ci
  */
 export const projects: Project[] = [
   {
+    // Before is scaled and after is cropped so the room corner and door line up for the slider (see the script).
+    id: 'sunroom',
+    title: 'Sunroom Renovation',
+    workType: 'Sunroom Remodel',
+    city: '', // client to confirm city
+    matchedPair: true,
+    featured: true,
+    before: [
+      {
+        src: 'projects/sunroom/before-1.jpg',
+        alt: 'Sunroom before renovation: gray-beige carpet, vertical blinds over the windows, a flush ceiling light and gray walls',
+      },
+    ],
+    after: [
+      {
+        src: 'projects/sunroom/after-1.jpg',
+        alt: 'Sunroom after renovation: wood-look floor, uncovered windows onto the yard, a ceiling fan with light and warm beige walls',
+      },
+    ],
+  },
+  {
     id: 'attic-bedroom',
     title: 'Attic Bedroom Makeover',
     workType: 'Bedroom Remodel',
     city: '', // client to confirm city
     matchedPair: true,
-    featured: true,
     before: [
       {
         src: 'projects/attic-bedroom/before-1.jpg',

@@ -26,7 +26,8 @@ interface Props {
 }
 
 const { before, after, label, sizes, class: className } = Astro.props;
-const widths = (m: ImageMetadata) => [480, 800, 1200].filter((w) => w <= m.width).concat(m.width < 480 ? [m.width] : []);
+// Up to the source width, never upscaled.
+const widths = (m: ImageMetadata) => [480, 800, 1200].filter((w) => w < m.width).concat(m.width);
 ---
 
 <div
