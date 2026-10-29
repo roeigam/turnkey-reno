@@ -18,7 +18,7 @@ Node 22.12+ is required.
 
 ## Editing content
 
-**All business content lives in [`src/data/site.ts`](src/data/site.ts).** That includes the company name, phone, address, slogan, services, about text, projects, tips, form copy and SEO text. Components only read from it.
+**All business content lives in [`src/data/site.ts`](src/data/site.ts).** That includes the company name, phone, address, slogan, services, about text, the How We Work steps, tips, form copy and SEO text. Components only read from it.
 
 | Want to change…           | Edit in `site.ts`                         |
 | ------------------------- | ----------------------------------------- |
@@ -26,11 +26,12 @@ Node 22.12+ is required.
 | Hero text and buttons     | `hero` (headline = `company.slogan`)      |
 | Services                  | `services` (icon names: see `IconName`)   |
 | About / Why choose us     | `about`                                   |
-| Projects (before/after)   | `projects`                                |
+| How We Work (4 steps)     | `howWeWork`                               |
+| Projects gallery (off)    | `projects`, `settings.showProjects`       |
 | Tips                      | `tips`                                    |
 | Page title, description   | `seo`                                     |
 | Form backend (Web3Forms key) | `form.web3formsKey`                    |
-| Placeholder badges, noindex, hero background | `settings`             |
+| Placeholder badges, noindex, hero background, section switches | `settings` |
 
 Items marked `placeholder: true` display a small **Placeholder** badge while `settings.showPlaceholderBadges` is `true`.
 
@@ -38,23 +39,20 @@ Items marked `placeholder: true` display a small **Placeholder** badge while `se
 
 Images live in **`src/assets/`** and are referenced from `site.ts` by path relative to that folder. Astro resizes them and converts JPG/PNG to WebP at build time, with responsive `srcset`. SVGs are passed through unchanged.
 
-- **Projects:** use one folder per project, `src/assets/projects/<id>/` (`before-1.jpg`, `after-1.jpg`, …). Each entry in `projects` (site.ts) has:
-  - `title` and `workType`;
-  - `city`: the caption shows "Work type · City, OH", or just the work type while `city` is empty;
-  - `before[]` and `after[]` images, each with alt text;
-  - `matchedPair: true` when before and after are shot from the same angle, which gives an interactive comparison slider. Otherwise the card shows before | after side by side;
-  - `featured: true` for the large card (one project). On desktop it spans the full width and the other projects share the row below it evenly (3 projects → three columns);
-  - `enabled: false` to keep a project in the data without showing it. Put its images in `src/assets/_disabled/`, which is excluded from the build. Every image in the regular asset folders is bundled into `dist/` even when unused, so this keeps disabled content from shipping. To enable it, move the files back under `src/assets/projects/` and update the paths. The build stops with a clear message if an enabled item still points into `_disabled/`.
+**Only publish the company's own photos or properly licensed stock.** No photos of other companies' work (legal).
 
-  The lightbox shows all of a project's photos, befores first, each labelled Before/After.
-- **Project photo sources:** the client's social-media composites and reels live in `src/assets/projects/source/` and are **never shipped**, because they're excluded from the image glob. The videos (`*.mp4`) are also kept out of git because of their size. `node scripts/extract-project-photos.mjs` crops the clean photos out of the composites. It only crops (no resizing or edits), every crop box is documented in the script, and it pulls the roof frames from the reel with `ffmpeg-static`, which needs the video present locally.
-- **Sunroom (comparison slider):** the client's photos are clean, but the after photo was shot with an ultra-wide lens, so the room appears smaller. To line them up for the slider, the script fits a uniform scale and offset to landmarks measured in both photos (room corner, door edge). It then crops the after photo and downscales the before photo to the same size. Nothing is warped or lens-corrected, so the far-left wall still steps a little at the slider handle. The full, uncropped after photo is written to `src/assets/hero/sunroom-after.jpg` for the hero.
+- **`src/assets/_disabled/` (never published):** photos from a different company's projects: the former project gallery crops, the former photo hero, and their source composites and videos. They're kept for reference only and **must not be published on this site** (see the README in that folder). The image loader excludes the whole folder, and the build stops with an error if `site.ts` points into it. The videos are also kept out of git.
+- **Projects gallery (off):** `settings.showProjects` is `false`. The section and its "Projects" nav link are left out, and "How We Work" takes their place. The gallery code (before/after cards, comparison slider, lightbox) and the `Project` data structure are kept. **Re-enable only with photos of Turnkey Reno's own completed projects:**
+  1. Put them in `src/assets/projects/<id>/` (`before-1.jpg`, `after-1.jpg`, …).
+  2. Add entries to `projects` (there's a commented example in site.ts). Each has `title`, `workType`, `city` (caption "Work type · City, OH"), `before[]`/`after[]` with alt text, `matchedPair` (same angle → comparison slider) and an optional `featured` (full-width card).
+  3. Set `settings.showProjects` to `true`.
+- **Stock images:** put them in `src/assets/stock/` and add an entry for each to [`src/assets/stock/CREDITS.md`](src/assets/stock/CREDITS.md) (source URL, photographer, license, download date) **before** it goes on the site.
+- **How We Work side image:** `howWeWork.image` + `settings.showHowWeWorkImage` (off). When on, the section shows the image on the left and the steps as a vertical timeline on the right.
+- **Hero background:** `settings.heroImage` picks one of `hero.images`. Currently that's `'blueprint'`, the blueprint illustration, which is the intended design for now and shows no badge.
+  - Each option has a `position` (CSS object-position) for phones and desktop.
+  - A photo option gets a navy overlay that keeps all hero text at WCAG AA.
+  - To add one (own photo or licensed stock, ideally ≥ 2400px wide): put it in `src/assets/hero/` or `src/assets/stock/`, add it to `hero.images`, select it, and re-check the contrast.
 - **Service card photos:** each service can have an optional `image`. These only render when `settings.showServiceImages` is `true`. Turn it on once every service card has a photo, so the grid stays consistent.
-- **Hero background:** `settings.heroImage` picks one of `hero.images`:
-  - `'sunroom'` (default): the sunroom after photo under a navy overlay;
-  - `'blueprint'`: the original placeholder, which shows a Placeholder badge.
-
-  Each option has a `position` (CSS object-position) for phones and for desktop, which sets the focal point. To use a new photo, put it in `src/assets/hero/` (ideally ≥ 2400px wide; the sunroom photo is 1448px), add an entry to `hero.images`, and select it. The overlay is tuned so all hero text meets WCAG AA contrast on the sunroom photo. Re-check the contrast if you swap in a much brighter photo.
 
 A missing image path fails the build with a message listing the available files.
 
@@ -114,6 +112,7 @@ The site is live at **https://turnkeyrenollc.com**. `www.turnkeyrenollc.com` and
 **Hosting: Netlify**
 - Netlify project subdomain: `turnkey-reno.netlify.app`. The build settings are in `netlify.toml` (`npm run build`, publish `dist`, Node 22).
 - Free plan, credit-based: **every production deploy uses credits** from a monthly allowance. Group changes and push them in batches rather than one small push at a time.
+- The free plan adds a "Powered by Netlify" badge in the bottom-right corner. It can't be hidden on this plan, and the site doesn't touch it. Instead, the mobile action bar (Call / Free Estimate) detects the badge and sits just above it, so both buttons stay tappable. Without the badge (locally, or on a paid plan) the bar sits at the very bottom as usual.
 - **How a change goes live:** push to the `main` branch on GitHub. Netlify builds and deploys automatically, usually within a couple of minutes.
 - **Rollback:** in Netlify, open Deploys, pick an earlier deploy and choose "Publish deploy". Or `git revert` the change and push.
 
@@ -135,8 +134,6 @@ The site is live at **https://turnkeyrenollc.com**. `www.turnkeyrenollc.com` and
 The output is plain static files in `dist/`.
 
 - **Cloudflare Pages:** framework preset "Astro", build command `npm run build`, output directory `dist`, and set environment variable `NODE_VERSION=22`.
-
-**About `ffmpeg-static`:** this package is used only by `scripts/extract-project-photos.mjs`, never by the site build. Its install script downloads an ~80 MB ffmpeg binary from GitHub. It's listed under `optionalDependencies`, so if that download fails or is blocked (on Netlify, Cloudflare or locally), `npm install` still succeeds and the package is simply skipped; the build doesn't need it. Locally, if the crop script reports ffmpeg as missing, run `npm install ffmpeg-static`. If npm asks you to approve install scripts, run `npm approve-scripts ffmpeg-static`.
 
 ## Search engines
 
@@ -173,7 +170,7 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 - [x] Privacy policy page (`/privacy`), linked in the footer and under the form
 - [x] Sitemap (`/sitemap.xml`), referenced from robots.txt
 - [x] OG image `public/og-image.png` with the real logo, absolute URL on the domain
-- [x] Real hero photo: the sunroom after photo (`settings.heroImage: 'sunroom'`)
+- [x] ~~Hero photo~~: removed in v1.1.0 (it showed another company's project); the hero is the blueprint illustration again
 - [x] Real logo and favicon (recreated as SVG from the client artwork)
 - [x] "Within 24 hours" response promise removed (the client doesn't commit to a response time)
 - [x] Form shows a customer-friendly "call or email us" note while it isn't connected
@@ -181,14 +178,14 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 ## After launch
 
 - [ ] **Connect the form:** set `form.web3formsKey`, push, then send a test request and confirm it arrives in the client's inbox
-- [ ] Confirm the city for each project (`city` in `projects`, currently empty for all four: sunroom, attic, roof, concrete), and add more projects as photos arrive
+- [ ] Client approval of the "How We Work" copy (`howWeWork` in site.ts, marked PENDING CLIENT APPROVAL)
+- [ ] Photos of Turnkey Reno's **own** completed projects, then re-enable the gallery (`settings.showProjects`, see Images)
+- [ ] Licensed stock images (with entries in `src/assets/stock/CREDITS.md`): How We Work side image (`settings.showHowWeWorkImage`), and optionally a hero photo (≥ 2400px wide)
 - [ ] Re-enable the credentials advantage once license and insurance are obtained (see site.ts)
-- [ ] Basement foundation project: show it only if the client confirms the photos are of his own job (`enabled: false` in `projects`)
-- [ ] Test on a real phone: call button, menu, gallery, sliders, form
+- [ ] Test on a real phone: call button, menu, mobile bar (with the Netlify badge), form
 - [ ] Submit `https://turnkeyrenollc.com/sitemap.xml` in Google Search Console
-- [ ] Optional: a sharper hero photo (≥ 2400px wide) for large and retina screens
-- [ ] Optional: higher-resolution project photos (several sources are small, see CHANGELOG 0.4.0)
-- [ ] Optional: a branded photo version of the OG image (1200×630)
+- [ ] Netlify: delete old deploys that still contain the removed photos (Deploys tab), and if Google indexed any of those images, request their removal in Search Console
+- [ ] Optional: a branded photo version of the OG image (1200×630), from licensed or own photos only
 - [ ] Optional: a domain email (e.g. info@turnkeyrenollc.com) instead of the Gmail address. Set it up with the Northwest email service, without touching the website's DNS records
 
 ## Project structure
@@ -196,7 +193,7 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 ```
 src/
   data/site.ts          ← all content
-  assets/               ← logo, hero and project images (optimized at build)
+  assets/               ← logo and hero (optimized at build); stock/ (+ CREDITS.md); _disabled/ (never published)
   components/           ← one component per section, plus Icon/Logo/etc.
   layouts/BaseLayout    ← <head>: SEO, Open Graph, JSON-LD (home page), fonts; per-page title/description/path
   lib/images.ts         ← resolves site.ts image paths to optimized assets
@@ -206,5 +203,5 @@ src/
   pages/robots.txt.ts   ← generated robots.txt (follows settings.noindex)
   styles/global.css     ← Tailwind theme tokens, buttons, textures, motion
 public/                 ← favicon, OG image (copied as-is)
-scripts/                ← logo, placeholder and project-photo scripts
+scripts/                ← logo and placeholder image generators
 ```

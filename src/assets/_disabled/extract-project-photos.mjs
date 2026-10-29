@@ -1,16 +1,16 @@
 /**
- * Extracts clean project photos from the client's social-media composites and
- * the roof reel in src/assets/projects/source/ (reference only; excluded from the build).
+ * ARCHIVED. These are photos from a different company's projects. They must NOT be published on
+ * this site (legal); see README.md in this folder. Kept for reference only: everything this script
+ * reads and writes stays inside src/assets/_disabled/, which the image loader never includes.
  *
+ * Extracts the photos from the social-media composites and the roof reel in projects/source/.
  * Crop only: no resizing, sharpening or other edits, except the sunroom before photo, which is
  * uniformly downscaled to match the after photo's scale (see below). Crops are re-encoded as
- * JPEG quality 95 with 4:4:4 chroma; Astro then resizes/converts them at build time.
- * Every box below was measured on the source pixels; the comments say what each one avoids.
+ * JPEG quality 95 with 4:4:4 chroma. Every box below was measured on the source pixels.
  *
- * Run: node scripts/extract-project-photos.mjs
- * Requires: sharp (ships with Astro), and ffmpeg-static for the video frames. ffmpeg-static is an
- * optionalDependency: if its binary download failed during npm install, run `npm install ffmpeg-static`.
- * The video itself (roof-video.mp4) is git-ignored; it must be present locally.
+ * Run (only if ever needed): node src/assets/_disabled/extract-project-photos.mjs
+ * Requires sharp (ships with Astro) and, for the roof frames, ffmpeg-static, which is no longer a
+ * project dependency: npm install --no-save ffmpeg-static. The videos are git-ignored.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -19,9 +19,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const src = (f) => join(root, 'src/assets/projects/source', f);
-const out = (p) => join(root, 'src/assets', p);
+const root = dirname(fileURLToPath(import.meta.url)); // src/assets/_disabled
+const src = (f) => join(root, 'projects/source', f);
+const out = (p) => join(root, p);
 
 const save = async (input, box, target) => {
   mkdirSync(dirname(out(target)), { recursive: true });
@@ -48,9 +48,9 @@ await save(src('concrete-walkway.jpeg'), { left: 685, top: 134, width: 674, heig
  * Diagonal gold split runs from x≈828 at y200 to x≈666 at y900.
  * Before: below the logo box (ends y233), above the BEFORE tag (starts y802), left of the split at y796 (x≈690).
  * After: below the header (ends y186), above the AFTER tag's gold top line (from y≈797), right of the split at y194 (x≈833).
- * Stored but not shown: written to src/assets/_disabled/ (excluded from the build, see site.ts). */
-await save(src('basement-foundation.jpeg'), { left: 0, top: 240, width: 684, height: 556 }, '_disabled/projects/basement-foundation/before-1.jpg');
-await save(src('basement-foundation.jpeg'), { left: 840, top: 194, width: 696, height: 600 }, '_disabled/projects/basement-foundation/after-1.jpg');
+ */
+await save(src('basement-foundation.jpeg'), { left: 0, top: 240, width: 684, height: 556 }, 'projects/basement-foundation/before-1.jpg');
+await save(src('basement-foundation.jpeg'), { left: 840, top: 194, width: 696, height: 600 }, 'projects/basement-foundation/after-1.jpg');
 
 /* ── Sunroom: sunroom-before.png (1672×941) and sunroom-after.png (1448×1086) ──
  * Clean photos (no logos or labels), shot from about the same spot; the after photo uses an
@@ -117,11 +117,11 @@ const roofFrames = [
 ];
 const ffmpeg = await import('ffmpeg-static').then((m) => m.default).catch(() => null);
 if (!ffmpeg || !existsSync(ffmpeg)) {
-  console.error('ffmpeg-static is missing (optional dependency). Run: npm install ffmpeg-static');
+  console.error('ffmpeg-static is not installed. Run: npm install --no-save ffmpeg-static');
   process.exit(1);
 }
 if (!existsSync(src('roof-video.mp4'))) {
-  console.error('roof-video.mp4 not found in src/assets/projects/source/ (videos are kept out of git).');
+  console.error('roof-video.mp4 not found in src/assets/_disabled/projects/source/ (videos are kept out of git).');
   process.exit(1);
 }
 const tmp = mkdtempSync(join(tmpdir(), 'roof-'));

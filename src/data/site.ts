@@ -2,12 +2,14 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *  SITE CONTENT: the single source of truth for all business content.
  *
- *  Edit text, contact details, services, projects and tips here.
+ *  Edit text, contact details, services, process steps and tips here.
  *  Components read from this file; you shouldn't need to touch them.
  *
  *  Images are referenced by path RELATIVE TO src/assets/
- *  (e.g. "projects/kitchen.jpg"). JPG, PNG, WebP, AVIF and SVG all work;
+ *  (e.g. "stock/kitchen.jpg"). JPG, PNG, WebP, AVIF and SVG all work;
  *  raster photos are resized and converted to WebP at build time.
+ *  Only publish the company's own photos or properly licensed stock (credited in
+ *  src/assets/stock/CREDITS.md). Never use anything from src/assets/_disabled/.
  *
  *  Items with `placeholder: true` show a small "Placeholder" badge on the page
  *  while `settings.showPlaceholderBadges` is true. Replace the content, then
@@ -23,10 +25,16 @@ export const settings = {
   /** Enable once every service card has a photo, so the grid stays consistent. */
   showServiceImages: false,
   /**
-   * Hero background (see `hero.images`): 'sunroom' = the sunroom project's after photo under a
-   * navy overlay; 'blueprint' = the original blueprint placeholder (shows a Placeholder badge).
+   * Projects gallery (before/after cards, comparison slider, lightbox). Off since v1.1.0: the
+   * earlier photos were of a different company's work. Re-enable only with photos of
+   * Turnkey Reno's own completed projects. While off, the "How We Work" section takes its place
+   * and "Projects" is left out of every nav.
    */
-  heroImage: 'sunroom' as HeroImageKey,
+  showProjects: false,
+  /** Optional side image in "How We Work" (licensed stock, see howWeWork.image). Off until it's added. */
+  showHowWeWorkImage: false,
+  /** Hero background, one of `hero.images`. */
+  heroImage: 'blueprint' as HeroImageKey,
   /**
    * true = keep search engines out: adds <meta name="robots" content="noindex"> and a
    * disallow-all robots.txt. false since the public launch on the real domain.
@@ -102,10 +110,12 @@ export const seo = {
 
 /* ── Navigation ───────────────────────────────────────────────────────────── */
 
+// Header, mobile menu and footer quick links. "Projects" and "How We Work" share a slot:
+// whichever section is on the page (settings.showProjects) is listed.
 export const nav = [
   { label: 'Services', href: '#services' },
   { label: 'Why Us', href: '#about' },
-  { label: 'Projects', href: '#projects' },
+  settings.showProjects ? { label: 'Projects', href: '#projects' } : { label: 'How We Work', href: '#how-we-work' },
   { label: 'Tips', href: '#tips' },
   { label: 'Contact', href: '#estimate' },
 ];
@@ -123,20 +133,17 @@ export const hero = {
   /**
    * Background options; `settings.heroImage` picks one. `alt` stays empty (decorative background).
    * `position` is the CSS object-position (focal point) on phones and on desktop (≥ 1024px).
-   * To use a new photo, add it under src/assets/hero/ (ideally ≥ 2400px wide) and point `src` at it.
+   * To add a photo option: only the company's own photo or licensed stock (credited in
+   * src/assets/stock/CREDITS.md), ideally ≥ 2400px wide. Raster photos get a navy overlay that
+   * keeps all hero text at WCAG AA; re-check contrast for a much brighter photo.
    */
   images: {
-    sunroom: {
-      src: 'hero/sunroom-after.jpg',
-      alt: '',
-      position: { mobile: '50% 40%', desktop: '50% 45%' },
-      placeholder: false,
-    },
+    // The blueprint illustration is the intended design for now (no placeholder badge).
     blueprint: {
       src: 'hero/hero.svg',
       alt: '',
       position: { mobile: '70% 50%', desktop: '70% 50%' },
-      placeholder: true,
+      placeholder: false,
     },
   } satisfies Record<string, HeroImage>,
 };
@@ -207,8 +214,6 @@ export const services: Service[] = [
     title: 'Basement Finishing',
     description: 'Turn an unused basement into a family room, home office, guest suite or extra rental space, finished right and built to stay dry.',
     icon: 'stairs',
-    // File is in src/assets/_disabled/ (not shipped); move it out before enabling service images.
-    image: { src: '_disabled/projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' },
   },
   {
     id: 'flooring',
@@ -255,12 +260,32 @@ export const about = {
   watermark: 'Built Right',
 };
 
-/* ── Projects gallery ─────────────────────────────────────────────────────── */
+/* ── How we work (shown while the Projects gallery is off) ───────────────────── */
+
+// PENDING CLIENT APPROVAL: How We Work copy (heading, intro and the four steps).
+export const howWeWork = {
+  eyebrow: 'How we work',
+  heading: 'From first call to final walkthrough',
+  text: 'A simple, transparent process, so you know what happens next at every stage of your renovation.',
+  steps: [
+    { title: 'Free Estimate', text: 'We visit, listen and give you a clear, detailed quote.', icon: 'clipboard' },
+    { title: 'Budget-Based Plan', text: 'We plan the project around your goals and the budget you set.', icon: 'tag' },
+    { title: 'Build with Updates', text: 'One point of contact and regular photo progress updates.', icon: 'message' },
+    { title: 'Final Walkthrough', text: "We finish when it's done right and you're satisfied.", icon: 'award' },
+  ] satisfies { title: string; text: string; icon: IconName }[],
+  /**
+   * Optional side image, shown only when settings.showHowWeWorkImage is true. Licensed stock or the
+   * company's own photo only: put it in src/assets/stock/ and add its entry to CREDITS.md there.
+   */
+  image: { src: '', alt: '' },
+};
+
+/* ── Projects gallery (off: settings.showProjects) ───────────────────────────── */
 
 export const projectsIntro = {
   eyebrow: 'Our work',
   heading: 'Projects',
-  text: 'Real projects, real results. Click or tap any photo to see the full transformation.',
+  text: 'Before-and-after photos of our completed projects.',
 };
 
 export interface ProjectImage {
@@ -290,92 +315,22 @@ export interface Project {
 export const projectCaption = (p: Project) => (p.city ? `${p.workType} · ${p.city}, OH` : p.workType);
 
 /*
- * Photos are cropped from the client's composites and the roof reel by
- * scripts/extract-project-photos.mjs (sources in src/assets/projects/source/, never shipped).
+ * Re-enable only with photos of Turnkey Reno's own completed projects (legal: no photos of
+ * other companies' work). Put the photos in src/assets/projects/<id>/, add entries like the
+ * example below, then set settings.showProjects to true.
+ *
+ *   {
+ *     id: 'kitchen-north-canton',
+ *     title: 'Kitchen Remodel',
+ *     workType: 'Kitchen Remodel',
+ *     city: 'North Canton',
+ *     matchedPair: true, // same angle before and after → comparison slider
+ *     featured: true,
+ *     before: [{ src: 'projects/kitchen-north-canton/before-1.jpg', alt: 'What the before photo shows' }],
+ *     after: [{ src: 'projects/kitchen-north-canton/after-1.jpg', alt: 'What the after photo shows' }],
+ *   },
  */
-export const projects: Project[] = [
-  {
-    // Before is scaled and after is cropped so the room corner and door line up for the slider (see the script).
-    id: 'sunroom',
-    title: 'Sunroom Renovation',
-    workType: 'Sunroom Remodel',
-    city: '', // client to confirm city
-    matchedPair: true,
-    featured: true,
-    before: [
-      {
-        src: 'projects/sunroom/before-1.jpg',
-        alt: 'Sunroom before renovation: gray-beige carpet, vertical blinds over the windows, a flush ceiling light and gray walls',
-      },
-    ],
-    after: [
-      {
-        src: 'projects/sunroom/after-1.jpg',
-        alt: 'Sunroom after renovation: wood-look floor, uncovered windows onto the yard, a ceiling fan with light and warm beige walls',
-      },
-    ],
-  },
-  {
-    id: 'attic-bedroom',
-    title: 'Attic Bedroom Makeover',
-    workType: 'Bedroom Remodel',
-    city: '', // client to confirm city
-    matchedPair: true,
-    before: [
-      {
-        src: 'projects/attic-bedroom/before-1.jpg',
-        alt: 'Attic bedroom before the remodel: textured sloped ceiling, dated wood paneling, worn wood floor and old furniture',
-      },
-    ],
-    after: [
-      {
-        src: 'projects/attic-bedroom/after-1.jpg',
-        alt: 'Attic bedroom after the remodel: smooth white sloped ceiling, gray painted paneling, new plank flooring and a window at the far end',
-      },
-    ],
-  },
-  {
-    id: 'roof-replacement',
-    title: 'Roof Replacement',
-    workType: 'Roofing',
-    city: '', // client to confirm city
-    matchedPair: false,
-    before: [
-      { src: 'projects/roof-replacement/before-1.jpg', alt: 'Old roof before replacement: worn gray shingles and a weathered ridge cap with moss along its edge' },
-      { src: 'projects/roof-replacement/before-2.jpg', alt: 'Old roof before replacement: deteriorated shingles along the edge next to the gutter' },
-      { src: 'projects/roof-replacement/before-3.jpg', alt: 'Old roof before replacement: a broken, crumbling shingle with a gap, a hand pointing to the damage' },
-    ],
-    after: [
-      { src: 'projects/roof-replacement/after-1.jpg', alt: 'New roof after replacement: rows of new architectural shingles under a blue sky' },
-      { src: 'projects/roof-replacement/after-2.jpg', alt: 'New roof after replacement: new shingles with neighboring houses in the background' },
-    ],
-  },
-  {
-    // Images look computer-generated; re-enable only if the client confirms these are photos of his own job.
-    // Its files live in src/assets/_disabled/ (excluded from the build): move them to src/assets/projects/ when enabling.
-    id: 'basement-foundation',
-    title: 'Basement Foundation Repair',
-    workType: 'Basement',
-    city: '', // client to confirm city
-    matchedPair: false,
-    enabled: false,
-    before: [{ src: '_disabled/projects/basement-foundation/before-1.jpg', alt: 'Basement block wall with peeling paint and water stains' }],
-    after: [{ src: '_disabled/projects/basement-foundation/after-1.jpg', alt: 'Clean, painted basement block wall with a gray floor' }],
-  },
-  {
-    id: 'concrete-walkway',
-    title: 'Concrete Walkway',
-    workType: 'Concrete',
-    city: '', // client to confirm city
-    matchedPair: false,
-    before: [
-      { src: 'projects/concrete-walkway/before-1.jpg', alt: 'Side of the house before the walkway: grass, gravel and a downspout along the brick foundation' },
-    ],
-    after: [
-      { src: 'projects/concrete-walkway/after-1.jpg', alt: 'Side of the house after the work: a freshly poured concrete walkway along the foundation, still in its wooden forms' },
-    ],
-  },
-];
+export const projects: Project[] = [];
 
 /* ── Tips corner ──────────────────────────────────────────────────────────── */
 

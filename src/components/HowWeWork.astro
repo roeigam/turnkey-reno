@@ -1,0 +1,78 @@
+---
+/**
+ * "How We Work": the four-step process, shown while the Projects gallery is off.
+ * - Without an image: a horizontal process row on desktop (gold line through the step icons),
+ *   2 × 2 on tablets, and a vertical timeline on phones.
+ * - With settings.showHowWeWorkImage and howWeWork.image set: image on the left (5 columns),
+ *   steps as a vertical timeline on the right (7 columns).
+ */
+import { Image } from 'astro:assets';
+import { howWeWork, settings } from '../data/site';
+import { asset } from '../lib/images';
+import Icon from './Icon.astro';
+import SectionHeading from './SectionHeading.astro';
+
+const photo =
+  settings.showHowWeWorkImage && howWeWork.image.src ? { meta: asset(howWeWork.image.src), alt: howWeWork.image.alt } : undefined;
+const vertical = !!photo;
+
+// Vertical connector between step icons (timeline): from below one icon to the next.
+// Written out in full (twice) so Tailwind can find the class names.
+const connector =
+  'not-last:after:absolute not-last:after:top-[4.5rem] not-last:after:-bottom-6 not-last:after:left-8 not-last:after:w-px not-last:after:bg-accent/45';
+const connectorPhoneOnly =
+  'max-sm:not-last:after:absolute max-sm:not-last:after:top-[4.5rem] max-sm:not-last:after:-bottom-6 max-sm:not-last:after:left-8 max-sm:not-last:after:w-px max-sm:not-last:after:bg-accent/45';
+---
+
+<section id="how-we-work" aria-labelledby="how-we-work-heading" class="relative bg-white py-24 sm:py-28 lg:py-36">
+  <div class="container-site">
+    <SectionHeading id="how-we-work-heading" eyebrow={howWeWork.eyebrow} heading={howWeWork.heading} text={howWeWork.text} />
+
+    <div class:list={['mt-12 lg:mt-16', vertical && 'grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-16']}>
+      {
+        photo && (
+          <figure class="relative lg:col-span-5" data-reveal>
+            <Image
+              src={photo.meta}
+              alt={photo.alt}
+              widths={[480, 800, 1200].filter((w) => w < photo.meta.width).concat(photo.meta.width)}
+              sizes="(min-width: 1280px) 30rem, (min-width: 1024px) 40vw, 100vw"
+              class="aspect-[4/3] w-full rounded-[4px] object-cover shadow-[0_24px_50px_-28px_rgb(7_14_26/0.55)] lg:aspect-[4/5]"
+            />
+            <span class="absolute inset-x-6 -bottom-1.5 h-1.5 bg-stripes" aria-hidden="true" />
+          </figure>
+        )
+      }
+
+      <ol
+        class:list={[
+          'relative',
+          vertical ? 'space-y-10 lg:col-span-7' : 'grid gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-14 lg:grid-cols-4 lg:gap-8',
+        ]}
+        role="list"
+      >
+        {/* Desktop process line through the icon centres, first to last column (hidden behind the icons) */}
+        {!vertical && <span class="absolute top-8 left-8 hidden h-px bg-accent/45 lg:block lg:right-[calc((100%-6rem)/4-2rem)]" aria-hidden="true" />}
+
+        {
+          howWeWork.steps.map((step, i) => (
+            <li
+              class:list={['relative flex gap-5', vertical ? connector : ['sm:block', connectorPhoneOnly]]}
+              data-reveal
+              style={`--reveal-delay: ${i * 90}ms`}
+            >
+              <span class="relative z-10 grid size-16 shrink-0 place-items-center rounded-full bg-navy-950 text-accent ring-8 ring-white">
+                <Icon name={step.icon} class="size-7" strokeWidth={1.75} />
+              </span>
+              <div class:list={['min-w-0 pt-1', !vertical && 'sm:mt-6 sm:pt-0']}>
+                <p class="font-display text-sm font-semibold tracking-[0.22em] text-accent-700 uppercase">Step {String(i + 1).padStart(2, '0')}</p>
+                <h3 class="mt-1.5 font-display text-2xl leading-tight font-bold tracking-wide text-navy-900 uppercase sm:text-[1.75rem]">{step.title}</h3>
+                <p class="mt-2 leading-relaxed text-slate-600">{step.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>

@@ -3,23 +3,79 @@ import { company } from '../data/site';
 import Icon from './Icon.astro';
 ---
 
+<!--
+  Phones/tablets only. Netlify's free plan injects a "Powered by Netlify" badge (fixed, bottom-right)
+  that would cover the right-hand button. The badge itself is left untouched; when it's present,
+  the script below measures it and only this bar adapts (see the styles at the bottom).
+-->
 <div
   class="on-dark fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-white/10 bg-navy-950 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.5)] lg:hidden"
   role="region"
   aria-label="Quick contact"
+  data-mobile-bar
 >
   <a
     href={`tel:${company.phoneE164}`}
     class="flex h-16 items-center justify-center gap-2.5 font-display text-lg font-semibold tracking-[0.1em] text-white uppercase transition-colors active:bg-white/10"
   >
-    <Icon name="phone" class="size-5 text-accent" />
+    <Icon name="phone" class="size-5 shrink-0 text-accent" />
     Call
   </a>
   <a
     href="/#estimate"
     class="flex h-16 items-center justify-center gap-2.5 bg-accent font-display text-lg font-semibold tracking-[0.1em] text-navy-950 uppercase transition-colors active:bg-accent-400"
   >
-    <Icon name="clipboard" class="size-5" />
+    <Icon name="clipboard" class="size-5 shrink-0" />
     Free Estimate
   </a>
 </div>
+
+<script>
+  // Track Netlify's badge iframe (added after load, resized by Netlify, possibly removed).
+  // Only its collapsed size is used, so opening its panel doesn't make the bar jump.
+  const root = document.documentElement;
+  const COLLAPSED_MAX_HEIGHT = 120;
+
+  const update = () => {
+    const frame = document.getElementById('nl-badge-frame');
+    if (!frame || frame.dataset.nlReady !== '1') {
+      root.classList.remove('has-nl-badge');
+      return;
+    }
+    const r = frame.getBoundingClientRect();
+    if (!r.width || r.height > COLLAPSED_MAX_HEIGHT) return; // not laid out yet, or panel open: keep the last size
+    root.style.setProperty('--nl-badge-h', `${Math.ceil(r.height)}px`);
+    root.classList.add('has-nl-badge');
+  };
+
+  let watched: HTMLElement | null = null;
+  const frameObserver = new MutationObserver(update);
+  new MutationObserver(() => {
+    const frame = document.getElementById('nl-badge-frame');
+    if (frame !== watched) {
+      frameObserver.disconnect();
+      watched = frame;
+      if (frame) frameObserver.observe(frame, { attributes: true, attributeFilter: ['style', 'data-nl-ready'] });
+    }
+    update();
+  }).observe(document.body, { childList: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+</script>
+
+<style is:global>
+  /*
+   * With the badge present, the buttons sit just above it: the bar's navy base extends down
+   * behind the badge, and the page gets the same extra bottom padding so nothing is covered.
+   * (Tried the alternative of ending the bar before the badge's corner: the buttons got too
+   * cramped at 360px and page content showed around the badge.)
+   */
+  @media (width < 64rem) {
+    html.has-nl-badge [data-mobile-bar] {
+      padding-bottom: max(var(--nl-badge-h), env(safe-area-inset-bottom));
+    }
+    html.has-nl-badge body {
+      padding-bottom: calc(4rem + max(var(--nl-badge-h), env(safe-area-inset-bottom)));
+    }
+  }
+</style>

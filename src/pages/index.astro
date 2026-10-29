@@ -6,10 +6,12 @@ import TrustStrip from '../components/TrustStrip.astro';
 import Services from '../components/Services.astro';
 import About from '../components/About.astro';
 import Projects from '../components/Projects.astro';
+import HowWeWork from '../components/HowWeWork.astro';
 import Tips from '../components/Tips.astro';
 import EstimateForm from '../components/EstimateForm.astro';
 import Footer from '../components/Footer.astro';
 import MobileActionBar from '../components/MobileActionBar.astro';
+import { settings } from '../data/site';
 ---
 
 <BaseLayout>
@@ -19,7 +21,8 @@ import MobileActionBar from '../components/MobileActionBar.astro';
     <TrustStrip />
     <Services />
     <About />
-    <Projects />
+    {/* Projects only with photos of Turnkey Reno's own completed projects (settings.showProjects) */}
+    {settings.showProjects ? <Projects /> : <HowWeWork />}
     <Tips />
     <EstimateForm />
   </main>

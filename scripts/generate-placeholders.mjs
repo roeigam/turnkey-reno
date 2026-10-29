@@ -1,5 +1,5 @@
 /**
- * Generates the placeholder hero image (project photos are real now: see extract-project-photos.mjs):
+ * Generates the blueprint hero illustration (the current hero background):
  *   src/assets/hero/hero.svg          hero background (blueprint-style house elevation)
  *   (the OG image and favicons are built by scripts/build-logo.mjs)
  *

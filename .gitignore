@@ -37,4 +37,4 @@ Thumbs.db
 .wrangler/
 
 # Client source videos (large; kept locally, not in git)
-src/assets/projects/source/*.mp4
+src/assets/_disabled/**/*.mp4
