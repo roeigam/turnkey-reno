@@ -1,8 +1,108 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 1.0.0**
+**Current version: 1.1.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [1.1.0] - 2026-10-29
+
+| Field | Value |
+|---|---|
+| Release type | Minor |
+| Previous version | 1.0.0 |
+| Git commit | 3748837 |
+| Git tag | v1.1.0 |
+| Environment | Production (https://turnkeyrenollc.com) |
+| Status | Live |
+
+### Summary
+All project photos are off the website, including the photo behind the headline. They showed another company's work, which the business can't publish. In their place, a new "How We Work" section explains the four steps from free estimate to final walkthrough, and the top of the page shows the blueprint illustration again. The gallery can come back later with photos of Turnkey Reno's own finished projects. On phones, the Call and Free Estimate buttons at the bottom of the screen are no longer covered by Netlify's badge.
+
+### Added
+- `HowWeWork.astro` + `howWeWork` in `site.ts`: "How We Work" section in the former Projects slot.
+  - Contents: 4 steps with icons (Free Estimate, Budget-Based Plan, Build with Updates, Final Walkthrough).
+  - Layout: a horizontal process row with a gold connecting line on desktop, 2 × 2 on tablets, a vertical timeline on phones.
+  - Copy is marked `PENDING CLIENT APPROVAL` in site.ts (no placeholder badge).
+- Optional How We Work side image: `howWeWork.image` + `settings.showHowWeWorkImage` (off). When on, the image sits on the left (5 columns) and the steps become a vertical timeline (7 columns).
+- `src/assets/stock/CREDITS.md`: credit template for licensed stock images (file, use, source URL, photographer, license, download date, notes). No images yet.
+- `src/assets/_disabled/README.md`: "Photos from a different company's projects. Must NOT be published on this site (legal). Kept for reference only.", plus what each folder holds.
+- `settings.showProjects` (false): switches between the Projects gallery and How We Work, including the matching nav entry.
+- `MobileActionBar.astro`: detects Netlify's free-plan badge (`#nl-badge-frame`, once Netlify marks it ready), measures its collapsed height and sets `--nl-badge-h` and `html.has-nl-badge`.
+  - While the badge is present, the bar's buttons sit just above it and the bar's navy base extends behind it.
+  - The page's bottom padding grows by the same amount, so no content is covered.
+  - The badge itself is not hidden, moved or restyled.
+  - When the badge is opened into its panel, the bar keeps its position; if the badge is removed, the bar returns to the bottom.
+
+### Changed
+- Hero: `settings.heroImage` → `'blueprint'`, with `hero.images.blueprint.placeholder` → `false` (the intended design for now, no badge). The sunroom photo option is removed from `hero.images`; the photo-hero code (overlay, focal point, sizes) stays for a future own or licensed photo.
+- Nav (header, mobile menu, footer quick links): "Projects" is replaced by "How We Work" (`#how-we-work`) while `showProjects` is off.
+- `src/pages/index.astro`: renders `<Projects />` only when `settings.showProjects` is on, otherwise `<HowWeWork />`.
+- `Projects.astro`, `BeforeAfterSlider.astro`: kept, with the comment "Re-enable only with photos of Turnkey Reno's own completed projects."
+- `site.ts`:
+  - `projects` is now an empty array, with a commented example entry for future own photos;
+  - `projectsIntro.text` is now neutral (was "Real projects, real results…");
+  - header comment: only own photos or licensed stock, never `_disabled/`.
+- `src/lib/images.ts`: the whole `src/assets/_disabled/**` folder stays excluded (the separate `projects/source` exclusion is gone, since that folder moved inside it). `asset()` refuses `_disabled/` paths with a "must not be published" message.
+- `.gitignore`: video rule now `src/assets/_disabled/**/*.mp4`.
+- README: "Images" section rewritten (legal rule, `_disabled/`, how to re-enable Projects with own photos, stock credits, hero, side image), content table, Netlify badge note, launch checklist (hero photo marked removed), "After launch" list, project structure.
+
+### Removed
+- From the live site:
+  - every project photo (sunroom, attic bedroom, roof, concrete; basement was already hidden);
+  - the sunroom hero photo;
+  - the Projects section and its lightbox data.
+- All files moved (with `git mv`, history kept) to `src/assets/_disabled/`:
+  - `projects/{sunroom,attic-bedroom,roof-replacement,concrete-walkway}/` → `_disabled/projects/`;
+  - `projects/source/` (composites, PNGs, git-ignored reels) → `_disabled/projects/source/`;
+  - `hero/sunroom-after.jpg` → `_disabled/hero/`;
+  - `scripts/extract-project-photos.mjs` → `_disabled/extract-project-photos.mjs`, with its paths now inside `_disabled/`. A re-run there wrote all 14 crops byte-identically and nothing outside the folder.
+- From `site.ts`: all five project entries (paths and alt texts), and the Basement Finishing card's `image` (a basement photo).
+- `ffmpeg-static` (`optionalDependencies`), only used by the archived script; the README note about it.
+
+### Content status
+- Pending client approval: How We Work copy.
+- Waiting for: photos of Turnkey Reno's own completed projects (to re-enable Projects); licensed stock for the How We Work side image and optionally the hero; Web3Forms key; license and insurance.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints. `npm run build`: pass.
+- `dist/`:
+  - no file with a project, sunroom, `_disabled` or source name;
+  - **no raster images at all** in `dist/_astro/` (0 JPG/PNG/WebP/AVIF; only SVG logos, the blueprint SVG and fonts), so nothing matches the removed photos' pixel sizes either;
+  - no `sunroom|attic|roof-repl|concrete-walk|basement-found|projects/|#projects|Real projects` in any HTML/JS/CSS/XML/TXT;
+  - every `src`/`srcset` in `index.html` and `privacy.html` resolves to a file in `dist/`.
+- **Sweep of tracked files** (excluding older CHANGELOG entries and `_disabled/`): no references to the photos. The only hits are generic file-name examples for future own photos (README, the site.ts example entry).
+- **Browser checks** (Playwright driving Microsoft Edge against `astro preview` of the production build), at 1440px and 390px:
+  - hero shows the blueprint SVG with 0 placeholder badges;
+  - sections run top → services → about → how-we-work → tips → estimate; `#projects` is absent and nothing links to it;
+  - How We Work has 4 steps with the exact texts, 4 icons and 0 images;
+  - header, mobile menu (01–05) and footer all list Services / Why Us / How We Work / Tips / Contact;
+  - "How We Work" scrolls in-page with the scroll-spy active (desktop); the mobile menu link closes the menu; from /privacy the links point to `/#…`;
+  - 3 images on the page (logo, hero SVG, footer logo), 0 broken, 0 failed image requests;
+  - no overflow, no console errors.
+- **Side-image layout:** checked with a temporary test image, then reverted (not committed). Image 463×578 next to the vertical timeline on desktop, stacked on phones.
+- **Netlify badge:** Netlify's real badge script was loaded into the local page with the same attributes as on production.
+  - Option A (lift the bar above the badge) and option B (end the bar before the badge's corner) were both built and compared. B was rejected: the buttons got cramped (82px each at 360px, "Free Estimate" wrapping) and page content showed around the badge. A was kept.
+  - Result at 390px and 360px: the badge is 197×64 in the corner; the buttons are 64px tall and full width above it; both pass a 6-point hit test and a real tap reaches `/#estimate`; body padding is 128px and the footer ends above the bar.
+  - Opening the badge panel (366×338) doesn't move the bar; removing the badge returns the bar to the bottom with 64px padding.
+  - Without the badge, the bar is unchanged.
+- **1.0.0 live results** (checked after the 1.0.0 push on 2026-10-23):
+  - the deploy was live ~20 s after the push;
+  - TLS 1.3, Let's Encrypt certificate for turnkeyrenollc.com + www, valid to 2027-01-21;
+  - `www`/`http` 301 to `https://turnkeyrenollc.com/`;
+  - canonical, `og:url`, `og:image` and JSON-LD on the domain; no noindex (meta or header);
+  - robots.txt, sitemap.xml and /privacy return 200 (`/privacy/` 301s to `/privacy`);
+  - the form showed the new note with tel/mailto links; no badges; no console errors.
+  - That check also found the Netlify badge covering the mobile "Free Estimate" button, fixed in this release.
+- Not checked at release time: the live site after this push (photos gone, previous image URLs returning 404, How We Work, nav, bar with the real badge). Results go into the next release.
+
+### Known issues
+- Previous Netlify deploys stay reachable at their own deploy URLs (`<deploy-id>--turnkey-reno.netlify.app`) and still contain the photos. They're not linked from anywhere; deleting them in Netlify (Deploys tab) is an action for the account owner.
+- The site was indexable for 6 days (since 1.0.0), so search engines may have picked up some images. They return 404 after this deploy; Search Console's removal tool can speed up dropping them.
+- With Netlify's badge, the mobile bar plus badge take 128px at the bottom of the screen (64px without the badge).
+- Carried over: the focus outline fades in from the text color (~150ms); a 0.0009 layout shift in the header nav at 2x while fonts load.
+
+### Deployment and rollback
+Deployed to production (https://turnkeyrenollc.com) via push to main → Netlify (turnkey-reno.netlify.app). Rollback: **don't publish any deploy or tag from 1.0.0 or earlier**: those versions contain the removed photos. If something in this release needs undoing, fix it forward, or revert only the specific change and push.
 
 ## [1.0.0] - 2026-10-23
 
@@ -796,6 +896,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[1.1.0]: https://github.com/roeigam/turnkey-reno/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roeigam/turnkey-reno/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/roeigam/turnkey-reno/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/roeigam/turnkey-reno/compare/v0.4.1...v0.4.2
