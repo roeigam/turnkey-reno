@@ -84,7 +84,7 @@ It uses `opentype.js` and `@fontsource/montserrat` (dev-only) plus `sharp`, whic
 
 ## Connecting the estimate form
 
-The form sends requests through [Web3Forms](https://web3forms.com). The only setting is the access key, in one place in `site.ts`:
+The form sends requests through [Web3Forms](https://web3forms.com). **It's connected since v1.2.0:** requests are emailed to **turnkeyrenousa@gmail.com**, the account the access key was created with. The only setting is the access key, in one place in `site.ts`:
 
 ```ts
 export const form = {
@@ -177,7 +177,8 @@ All release notes live in one file, [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Chan
 
 ## After launch
 
-- [ ] **Connect the form:** set `form.web3formsKey`, push, then send a test request and confirm it arrives in the client's inbox
+- [x] Connect the form: `form.web3formsKey` set in v1.2.0, and one test submission sent through the live form (see CHANGELOG 1.2.0)
+- [ ] Client to confirm the test submission ("TEST - website form check") arrived in turnkeyrenousa@gmail.com, including the spam folder
 - [ ] Client approval of the "How We Work" copy (`howWeWork` in site.ts, marked PENDING CLIENT APPROVAL)
 - [ ] Photos of Turnkey Reno's **own** completed projects, then re-enable the gallery (`settings.showProjects`, see Images)
 - [ ] Licensed stock images (with entries in `src/assets/stock/CREDITS.md`): How We Work side image (`settings.showHowWeWorkImage`), and optionally a hero photo (≥ 2400px wide)

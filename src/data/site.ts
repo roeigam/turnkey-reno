@@ -411,7 +411,7 @@ export const estimate = {
  * rather than in an environment variable.
  */
 export const form = {
-  web3formsKey: '',
+  web3formsKey: 'e2dd65fa-aaa0-41e7-8b22-78ca594ec7dd',
 };
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
