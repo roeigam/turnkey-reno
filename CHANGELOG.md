@@ -1,8 +1,59 @@
 # Changelog: Turnkey Reno website
 
-**Current version: 1.1.0**
+**Current version: 1.2.0**
 
 All notable changes to this project are documented in this file, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (`0.x.y` = pre-launch, `1.0.0` = public launch on the real domain).
+
+## [1.2.0] - 2026-10-29
+
+| Field | Value |
+|---|---|
+| Release type | Minor |
+| Previous version | 1.1.0 |
+| Git commit | f42b247 |
+| Git tag | v1.2.0 |
+| Environment | Production (https://turnkeyrenollc.com) |
+| Status | Live |
+
+### Summary
+The free estimate form now really sends requests. When a visitor submits it, the request is emailed to turnkeyrenousa@gmail.com and the visitor sees a thank-you message. The temporary "Online requests are almost ready" note no longer appears.
+
+### Changed
+- `site.ts` `form.web3formsKey`: set to the Web3Forms access key for turnkeyrenousa@gmail.com. This switches on the Web3Forms submission built in 0.4.2:
+  - JSON `fetch` to `https://api.web3forms.com/submit`;
+  - readable field labels;
+  - subject "New estimate request: {service} ({zip})", `from_name` "Turnkey Reno website", `replyto` when an email is given;
+  - "Sending..." state, thank-you panel, error message with a phone fallback;
+  - `botcheck` honeypot.
+  The key is public by design (it's in the page HTML).
+- README: form section marked connected (requests go to turnkeyrenousa@gmail.com); "After launch" list: form connected, client to confirm the test email arrived.
+
+### Content status
+- Pending: client confirmation that the test submission arrived; How We Work copy approval; own project photos; licensed stock images; license and insurance.
+
+### Verification
+- `npx astro check`: 0 errors, 0 warnings, 0 hints. `npm run build`: pass.
+- Built `index.html`: the form has `action="https://api.web3forms.com/submit"`, a hidden `access_key` with the key, and the `botcheck` honeypot.
+- Browser checks against `astro preview` of the production build (Playwright + Microsoft Edge), with the Web3Forms endpoint intercepted so nothing was sent:
+  - the request is `POST` JSON with the labelled fields, subject, `from_name` and `replyto`; without an email there's no `replyto` and empty optional fields read "Not provided";
+  - while waiting, the button is disabled and reads "Sending...";
+  - on success the thank-you panel replaces the form and gets focus, with no page navigation;
+  - API `success:false`, HTTP 500 and a network failure each show the error with a `tel:` link and keep the typed values; a retry succeeds;
+  - a filled honeypot sends nothing;
+  - no overflow at 390px, no console errors.
+- **1.1.0 live results** (checked after the 1.1.0 push on 2026-10-29; the deploy was live ~22 s after the push):
+  - all 43 previously live photo URLs (32 responsive WebPs and 11 original JPEG/PNG copies) return 404 on turnkeyrenollc.com and on turnkey-reno.netlify.app;
+  - the live HTML has no photo references and no raster images;
+  - hero is the blueprint SVG with no badge;
+  - sections run services → about → how-we-work → tips → estimate, with no `#projects`;
+  - header, mobile menu and footer nav show How We Work, and the links work from home and /privacy;
+  - 3 images, 0 broken; no console errors or overflow;
+  - with Netlify's real badge, the mobile bar sits above it at 390px and 360px, both buttons pass the hit test, and a tap reaches `/#estimate`;
+  - `/privacy`, `/robots.txt`, `/sitemap.xml` and `/og-image.png` return 200.
+- Not checked at release time: the live form after this push, including the one real test submission. Results go into the next release; the client has to confirm the email arrived.
+
+### Deployment and rollback
+Deployed to production (https://turnkeyrenollc.com) via push to main → Netlify (turnkey-reno.netlify.app). Rollback: revert this change (empty `form.web3formsKey`) and push; that brings back the "call or email us" note. Don't publish deploys from 1.0.0 or earlier (they contain the removed photos).
 
 ## [1.1.0] - 2026-10-29
 
@@ -896,6 +947,7 @@ This is the first complete version of the Turnkey Reno website: a single page bu
 ### Deployment and rollback
 Not deployed: no Netlify site was connected for this version. Once Netlify is connected to the GitHub repo, pushes to `main` deploy automatically. Rollback: redeploy the previous deploy from the Netlify Deploys tab, or `git revert` back to the previous tag.
 
+[1.2.0]: https://github.com/roeigam/turnkey-reno/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roeigam/turnkey-reno/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roeigam/turnkey-reno/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/roeigam/turnkey-reno/compare/v0.4.2...v0.5.0
